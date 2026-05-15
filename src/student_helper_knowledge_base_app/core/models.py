@@ -1,13 +1,18 @@
 """
-Модели данных для MVP приложения «База знаний студента».
+Модели данных для приложения «База знаний студента».
 Используется SQLAlchemy (declarative) + SQLite.
-В дальнейшем поле `Entry.note` будет дополнено системой блоков (ContentBlock),
-но останется для быстрых заметок и обратной совместимости.
+
+Включает:
+- Section (разделы дисциплин)
+- Entry (записи: лекции, практики, глобальные материалы)
+- File (физические файлы)
+- FileLink (полиморфные привязки файлов к записям и их составным частям)
 """
 
 from datetime import datetime
 from sqlalchemy import (
-    create_engine, Column, Integer, String, Text, Boolean, DateTime, Date, ForeignKey, UniqueConstraint, CheckConstraint
+    create_engine, Column, Integer, String, Text, Boolean, DateTime, Date,
+    ForeignKey, UniqueConstraint, CheckConstraint, Index
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
@@ -19,6 +24,7 @@ Base = declarative_base()
 # Модель "Раздел" (учебная дисциплина)
 # ------------------------------------------------------------
 class Section(Base):
+    """Раздел (учебная дисциплина)"""
     __tablename__ = 'sections'
 
     id = Column(Integer, primary_key=True)
@@ -39,6 +45,7 @@ class Section(Base):
 # Модель "Запись" (лекция, практика, глобальный материал)
 # ------------------------------------------------------------
 class Entry(Base):
+    """Запись (лекция, практика, глобальный материал)"""
     __tablename__ = 'entries'
     __table_args__ = (
         CheckConstraint(
@@ -68,6 +75,7 @@ class Entry(Base):
 # Модель "Физический файл"
 # ------------------------------------------------------------
 class File(Base):
+    """Физический файл в хранилище"""
     __tablename__ = 'files'
 
     id = Column(Integer, primary_key=True)
@@ -75,7 +83,7 @@ class File(Base):
     stored_path = Column(String(500), nullable=False, unique=True)  # относительный путь в хранилище приложения
     mime_type = Column(String(100), nullable=False)          # image/jpeg, application/pdf и т.д.
     size = Column(Integer, nullable=False)                   # размер в байтах
-    metadata_json = Column(Text, nullable=True)              # EXIF, дата съёмки, OCR-текст (JSON)
+    metadata_json = Column(Text, nullable=True)              # EXIF, дата съёмки, OCR-текст (JSON) и пр.
     created_at = Column(DateTime, default=datetime.now)
 
     # Отношения
@@ -89,35 +97,59 @@ class File(Base):
 # Модель "Привязка файла к записи"
 # ------------------------------------------------------------
 class FileLink(Base):
+    """
+    Полиморфная привязка файла к записи и её внутренним элементам.
+
+    Поля:
+    - entry_id: всегда заполнено, определяет запись-контейнер.
+    - owner_type, owner_id: опционально определяют конкретную часть записи
+      (блок контента, аннотацию изображения и т.д.). Если owner_type IS NULL,
+      значит файл привязан напрямую к записи (link_type='attachment').
+    - link_type: тип связи (attachment, gallery_item, inline_image, annotation_image и т.д.)
+    - ord: порядковый номер внутри записи (для сортировки)
+    - metadata_json: дополнительные данные (координаты на изображении и пр.)
+    """
     __tablename__ = 'file_links'
     __table_args__ = (
-        UniqueConstraint('entry_id', 'order', name='uq_filelink_entry_order'),
+        # CHECK: если owner_type NULL, то owner_id тоже NULL, и наоборот
+        CheckConstraint(
+            "(owner_type IS NULL AND owner_id IS NULL) OR (owner_type IS NOT NULL AND owner_id IS NOT NULL)",
+            name="ck_filelink_owner_consistency"
+        ),
+        # Уникальность порядка в пределах одной записи (для удобства)
+        UniqueConstraint('entry_id', 'ord', name='uq_filelink_entry_order'),
+        # Индексы для ускорения частых запросов
+        Index('idx_filelink_entry', 'entry_id'),
+        Index('idx_filelink_file', 'file_id'),
+        Index('idx_filelink_owner', 'owner_type', 'owner_id'),
+        Index('idx_filelink_link_type', 'link_type'),
     )
 
     id = Column(Integer, primary_key=True)
-    file_id = Column(Integer, ForeignKey('files.id', ondelete='CASCADE'), nullable=False)
     entry_id = Column(Integer, ForeignKey('entries.id', ondelete='CASCADE'), nullable=False)
-    link_type = Column(String(50), default='attachment')   # 'attachment', 'inline', 'gallery_item' и т.п.
-    order = Column(Integer, default=0)                     # порядок в списке прикреплённых файлов
+    owner_type = Column(String(50), nullable=True)   # 'content_block', 'image_annotation' и др.
+    owner_id = Column(Integer, nullable=True)
+    file_id = Column(Integer, ForeignKey('files.id', ondelete='CASCADE'), nullable=False)
+    link_type = Column(String(50), nullable=False, default='attachment')
+    ord = Column(Integer, default=0)
+    metadata_json = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.now)
 
     # Отношения
-    file = relationship('File', back_populates='file_links')
     entry = relationship('Entry', back_populates='file_links')
+    file = relationship('File', back_populates='file_links')
 
     def __repr__(self):
-        return f"<FileLink file_id={self.file_id} -> entry_id={self.entry_id}>"
+        owner = f"{self.owner_type}:{self.owner_id}" if self.owner_type else "direct"
+        return f"<FileLink(entry={self.entry_id}, file={self.file_id}, owner={owner}, type={self.link_type})>"
 
 
 # ------------------------------------------------------------
-# Функция для получения сессии (удобный инициализатор БД)
+# Функция для инициализации БД
 # ------------------------------------------------------------
-def init_db(db_path='sqlite:///data/app_data.db'):
-    """
-    Создаёт все таблицы и возвращает объект session.
-    Рекомендуется использовать с менеджером контекста.
-    """
-    engine = create_engine(db_path, echo=False)  # echo=True для отладки SQL
+def init_db(db_path='sqlite:///data/app_data.db', echo=False):
+    """Создаёт все таблицы и возвращает engine и sessionmaker"""
+    engine = create_engine(db_path, echo=echo)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
-    return Session()
+    return engine, Session
