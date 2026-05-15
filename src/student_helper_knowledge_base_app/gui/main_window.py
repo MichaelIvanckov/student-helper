@@ -9,9 +9,10 @@ from PySide6.QtWidgets import (
     QGroupBox, QFormLayout, QDateEdit, QCheckBox, QDialog, QDialogButtonBox
 )
 from PySide6.QtCore import Qt, QDate
-from PySide6.QGuiApplication import QDesktopServices
+# from PySide6.QGuiApplication import QDesktopServices
+from PySide6.QtGui import QDesktopServices
 
-from data_service import DataService, DataServiceError
+from src.student_helper_knowledge_base_app.core.services import DataService, DataServiceError
 
 
 class CreateEntryDialog(QDialog):

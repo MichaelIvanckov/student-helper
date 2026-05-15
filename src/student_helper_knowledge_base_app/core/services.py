@@ -14,8 +14,8 @@ from PySide6.QtCore import QObject, Signal
 from sqlalchemy import create_engine, func, or_
 from sqlalchemy.orm import sessionmaker, joinedload
 
-from models import Base, Section, Entry, File, FileLink
-from models import init_db as _init_db  # переименуем, чтобы не конфликтовать
+from src.student_helper_knowledge_base_app.core.models import Base, Section, Entry, File, FileLink
+from src.student_helper_knowledge_base_app.core.models import init_db as _init_db  # переименуем, чтобы не конфликтовать
 
 
 class DataServiceError(Exception):
@@ -456,7 +456,8 @@ class DataService(QObject):
         photo_path = Path(photo_path)
         photo_date = self.extract_photo_date(photo_path)
         if not photo_date:
-            photo_date = date.today()  # или можно выбросить исключение
+            raise DataServiceError("У фото нет даты")
+            #photo_date = date.today()  # или можно выбросить исключение
 
         # Сначала найдём или создадим запись
         with self._get_session() as session:
