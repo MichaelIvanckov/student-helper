@@ -127,10 +127,10 @@ class FileLink(Base):
         ),
         # Уникальность порядка в пределах записи
         UniqueConstraint('entry_id', 'order_in_entry', name='uq_filelink_entry_order'),
-        # Уникальность порядка в пределах владельца (только если владелец задан)
-        UniqueConstraint('owner_type', 'owner_id', 'order_in_owner',
-                         name='uq_filelink_owner_order',
-                         condition=owner_type.isnot(None) & owner_id.isnot(None)),
+        ## Уникальность порядка в пределах владельца (только если владелец задан)
+        #UniqueConstraint('owner_type', 'owner_id', 'order_in_owner',
+        #                 name='uq_filelink_owner_order',
+        #                 condition=owner_type.isnot(None) & owner_id.isnot(None)),
         # Индексы для ускорения частых запросов
         Index('idx_filelink_entry', 'entry_id'),
         Index('idx_filelink_file', 'file_id'),
@@ -162,7 +162,16 @@ class FileLink(Base):
 
 
 # ------------------------------------------------------------
-# Функция для инициализации БД
+# Частичный уникальный индекс – должен быть определён ПОСЛЕ класса
+# ------------------------------------------------------------
+Index('uq_filelink_owner_order',
+      FileLink.owner_type, FileLink.owner_id, FileLink.order_in_owner,
+      unique=True,
+      sqlite_where=(FileLink.owner_type.isnot(None) & FileLink.owner_id.isnot(None)))
+
+
+# ------------------------------------------------------------
+# Инициализация БД
 # ------------------------------------------------------------
 def init_db(db_path='sqlite:///data/app_data.db', echo=False):
     """Создаёт все таблицы и возвращает engine и sessionmaker"""
