@@ -14,8 +14,8 @@ from sqlalchemy import (
     create_engine, Column, Integer, String, Text, Boolean, DateTime, Date,
     ForeignKey, UniqueConstraint, CheckConstraint, Index
 )
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base as declarative_base_
+from sqlalchemy.orm import relationship, sessionmaker, declarative_base
 
 
 # Базовый класс для всех моделей
@@ -136,7 +136,6 @@ class FileLink(Base):
         Index('idx_filelink_file', 'file_id'),
         Index('idx_filelink_owner', 'owner_type', 'owner_id'),
         Index('idx_filelink_link_type', 'link_type'),
-        Index('idx_filelink_deleted_files', 'file_id', 'deleted_at'),  # для сборщика мусора
     )
 
     id = Column(Integer, primary_key=True)
