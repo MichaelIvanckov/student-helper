@@ -5,8 +5,8 @@
 Включает:
 - Section (разделы дисциплин)
 - Entry (записи: лекции, практики, глобальные материалы)
-- File (физические файлы)
-- FileLink (полиморфные привязки файлов к записям и их составным частям)
+- File (физические файлы с поддержкой мягкого удаления)
+- FileLink (полиморфные привязки файлов к записям и их составным частям с двумя уровнями сортировки)
 """
 
 from datetime import datetime
@@ -17,8 +17,10 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
+
 # Базовый класс для всех моделей
 Base = declarative_base()
+
 
 # ------------------------------------------------------------
 # Модель "Раздел" (учебная дисциплина)
@@ -75,7 +77,7 @@ class Entry(Base):
 # Модель "Физический файл"
 # ------------------------------------------------------------
 class File(Base):
-    """Физический файл в хранилище"""
+    """Физический файл в хранилище с поддержкой мягкого удаления"""
     __tablename__ = 'files'
 
     id = Column(Integer, primary_key=True)
@@ -85,12 +87,18 @@ class File(Base):
     size = Column(Integer, nullable=False)                   # размер в байтах
     metadata_json = Column(Text, nullable=True)              # EXIF, дата съёмки, OCR-текст (JSON) и пр.
     created_at = Column(DateTime, default=datetime.now)
+    deleted_at = Column(DateTime, nullable=True)  # NULL = активен, иначе дата мягкого удаления
 
     # Отношения
     file_links = relationship('FileLink', back_populates='file', cascade='all, delete-orphan')
 
+    @property
+    def is_deleted(self):
+        return self.deleted_at is not None
+
     def __repr__(self):
-        return f"<File(id={self.id}, name='{self.original_name}')>"
+        status = " (deleted)" if self.is_deleted else ""
+        return f"<File(id={self.id}, name='{self.original_name}'{status})>"
 
 
 # ------------------------------------------------------------
@@ -106,7 +114,8 @@ class FileLink(Base):
       (блок контента, аннотацию изображения и т.д.). Если owner_type IS NULL,
       значит файл привязан напрямую к записи (link_type='attachment').
     - link_type: тип связи (attachment, gallery_item, inline_image, annotation_image и т.д.)
-    - ord: порядковый номер внутри записи (для сортировки)
+    - order_in_entry: порядковый номер внутри записи (глобальная сортировка)
+    - order_in_owner: порядковый номер внутри владельца (например, порядок в галерее блока)
     - metadata_json: дополнительные данные (координаты на изображении и пр.)
     """
     __tablename__ = 'file_links'
@@ -116,13 +125,18 @@ class FileLink(Base):
             "(owner_type IS NULL AND owner_id IS NULL) OR (owner_type IS NOT NULL AND owner_id IS NOT NULL)",
             name="ck_filelink_owner_consistency"
         ),
-        # Уникальность порядка в пределах одной записи (для удобства)
-        UniqueConstraint('entry_id', 'ord', name='uq_filelink_entry_order'),
+        # Уникальность порядка в пределах записи
+        UniqueConstraint('entry_id', 'order_in_entry', name='uq_filelink_entry_order'),
+        # Уникальность порядка в пределах владельца (только если владелец задан)
+        UniqueConstraint('owner_type', 'owner_id', 'order_in_owner',
+                         name='uq_filelink_owner_order',
+                         condition=owner_type.isnot(None) & owner_id.isnot(None)),
         # Индексы для ускорения частых запросов
         Index('idx_filelink_entry', 'entry_id'),
         Index('idx_filelink_file', 'file_id'),
         Index('idx_filelink_owner', 'owner_type', 'owner_id'),
         Index('idx_filelink_link_type', 'link_type'),
+        Index('idx_filelink_deleted_files', 'file_id', 'deleted_at'),  # для сборщика мусора
     )
 
     id = Column(Integer, primary_key=True)
@@ -131,7 +145,8 @@ class FileLink(Base):
     owner_id = Column(Integer, nullable=True)
     file_id = Column(Integer, ForeignKey('files.id', ondelete='CASCADE'), nullable=False)
     link_type = Column(String(50), nullable=False, default='attachment')
-    ord = Column(Integer, default=0)
+    order_in_entry = Column(Integer, default=0)
+    order_in_owner = Column(Integer, nullable=True)   # NULL, если владелец не задан
     metadata_json = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.now)
 
@@ -141,7 +156,9 @@ class FileLink(Base):
 
     def __repr__(self):
         owner = f"{self.owner_type}:{self.owner_id}" if self.owner_type else "direct"
-        return f"<FileLink(entry={self.entry_id}, file={self.file_id}, owner={owner}, type={self.link_type})>"
+        return (f"<FileLink(entry={self.entry_id}, file={self.file_id}, owner={owner}, "
+                f"type={self.link_type}, order_entry={self.order_in_entry}, "
+                f"order_owner={self.order_in_owner})>")
 
 
 # ------------------------------------------------------------
