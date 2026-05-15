@@ -79,6 +79,9 @@ class Entry(Base):
 class File(Base):
     """Физический файл в хранилище с поддержкой мягкого удаления"""
     __tablename__ = 'files'
+    __table_args__ = (
+        Index('idx_files_deleted_at', 'deleted_at'),   # индекс для мягкого удаления
+    )
 
     id = Column(Integer, primary_key=True)
     original_name = Column(String(300), nullable=False)      # имя, которое видел пользователь
