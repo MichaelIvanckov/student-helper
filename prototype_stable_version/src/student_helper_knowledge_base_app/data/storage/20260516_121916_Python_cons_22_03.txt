@@ -1,0 +1,396 @@
+Python 3.14.3 (tags/v3.14.3:323c59a, Feb  3 2026, 16:04:56) [MSC v.1944 64 bit(AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>> print("hellow world")
+hellow world
+>>> "??"
+'??'
+>>> t"type({a})"
+Traceback (most recent call last):
+  File "<python-input-2>", line 1, in <module>
+    t"type({a})"
+            ^
+NameError: name 'a' is not defined
+>>>
+>>> class std:
+...     class cin:
+...         def __lshift__(self, other):
+...             if self.stream not is None:
+...                 print (other, file=self.stream )
+...             else:
+...                 print(other)
+...             return self
+...         def __init__(file=None):
+...             self.stream = file
+...
+  File "<python-input-4>", line 4
+    if self.stream not is None:
+                       ^^
+SyntaxError: invalid syntax
+>>> class std:
+...     class cin:
+...         def __lshift__(self, other):
+...             if self.stream is not None:
+...                 print (other, file=self.stream )
+...             else:
+...                 print(other)
+...             return self
+...         def __init__(file=None):
+...             self.stream = file
+...
+>>> st = std.cin()
+Traceback (most recent call last):
+  File "<python-input-6>", line 1, in <module>
+    st = std.cin()
+  File "<python-input-5>", line 10, in __init__
+    self.stream = file
+    ^^^^
+NameError: name 'self' is not defined
+>>> class std:
+...     class cin:
+...         def __lshift__(self, other):
+...             if self.stream is not None:
+...                 print (other, file=self.stream )
+...             else:
+...                 print(other)
+...             return self
+...         def __init__(self, file=None):
+...             self.stream = file
+...
+>>> st = std.cin()
+>>> st << 5
+5
+<__main__.std.cin object at 0x0000023ACD5A3620>
+>>> st << 5 << "qwertyuiop" << std << '\n'
+5
+qwertyuiop
+<class '__main__.std'>
+
+
+<__main__.std.cin object at 0x0000023ACD5A3620>
+>>> class std:
+...     class ifstream:
+...         def __lshift__(self, other):
+...             if self.stream is not None:
+...                 print (other, end=' ', file=self.stream)
+...             else:
+...                 print(other, end=' ')
+...             return self if isinstance(other, EndlType) else None
+...         def __init__(self, file=None):
+...             self.stream = file
+...     @singletone
+...     class EndlType:
+...         __slots__ = (,)
+...         def __str__(self):
+...             return '\n'
+...     endl = EndlType()
+...
+  File "<python-input-11>", line 13
+    __slots__ = (,)
+                 ^
+SyntaxError: invalid syntax
+>>> class std:
+...     class ifstream:
+...         def __lshift__(self, other):
+...             if self.stream is not None:
+...                 print (other, end=' ', file=self.stream)
+...             else:
+...                 print(other, end=' ')
+...             return self if isinstance(other, EndlType) else None
+...         def __init__(self, file=None):
+...             self.stream = file
+...     @singletone
+...     class EndlType:
+...         __slots__ = tuple()
+...         def __str__(self):
+...             return '\n'
+...     endl = EndlType()
+...
+Traceback (most recent call last):
+  File "<python-input-12>", line 1, in <module>
+    class std:
+    ...<14 lines>...
+        endl = EndlType()
+  File "<python-input-12>", line 11, in std
+    @singletone
+     ^^^^^^^^^^
+NameError: name 'singletone' is not defined
+>>> import singleton
+Traceback (most recent call last):
+  File "<python-input-13>", line 1, in <module>
+    import singleton
+ModuleNotFoundError: No module named 'singleton'
+>>> def singleton(cls):
+...     ...
+...
+>>> from functools import wraps
+>>> wraps
+<function wraps at 0x0000023ACD3AD900>
+>>> def singleton(cls):
+...     @wraps()
+...     def SingleClassCreator(*args, **kwargs):
+...         if SingleClassCreator.__obj is None:          ...   ...  SingleClassCreator.__obj = cls(*args,war... ...              SingleClassCreator.__obj = cls(*args, kw\  s)
+gs) rgsargs)
+...         return SingleClassCreator.__obj
+...     SingleClassCreator.__obl = None
+...     return SingleClassCreator
+...
+>>> @singleton
+... class A:
+...     pass
+...
+Traceback (most recent call last):
+  File "<python-input-18>", line 1, in <module>
+    @singleton
+     ^^^^^^^^^
+  File "<python-input-17>", line 2, in singleton
+    @wraps()
+     ~~~~~^^
+TypeError: wraps() missing 1 required positional argument: 'wrapped'
+>>> def singleton(cls):
+...     @wraps
+...     def SingleClassCreator(*args, **kwargs):
+...         if SingleClassCreator.__obj is None:
+...              SingleClassCreator.__obj = cls(*args, kwargs)
+...         return SingleClassCreator.__obj
+...     SingleClassCreator.__obl = None
+...     return SingleClassCreator
+...
+>>> @singleton
+... class A:
+...     pass
+...
+>>> A
+functools.partial(<function update_wrapper at 0x0000023ACD3AD850>, wrapped=<function singleton.<locals>.SingleClassCreator at 0x0000023ACDA23CC0>, assigned=('__module__', '__name__', '__qualname__', '__doc__', '__annotate__', '__type_params__'), updated=('__dict__',))
+>>> a1 = A()
+Traceback (most recent call last):
+  File "<python-input-22>", line 1, in <module>
+    a1 = A()
+TypeError: update_wrapper() missing 1 required positional argument: 'wrapper'
+>>> def singleton(cls):
+...     @wraps(cls, updated=())
+...     def SingleClassCreator(*args, **kwargs):
+...         if SingleClassCreator.__obj is None:
+...              SingleClassCreator.__obj = cls(*args, kwargs)
+...         return SingleClassCreator.__obj
+...     SingleClassCreator.__obl = None
+...     return SingleClassCreator
+...
+>>> @singleton
+... class A:
+...     pass
+...
+>>> a1 = A()
+Traceback (most recent call last):
+  File "<python-input-25>", line 1, in <module>
+    a1 = A()
+  File "<python-input-23>", line 4, in SingleClassCreator
+    if SingleClassCreator.__obj is None:
+       ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'function' object has no attribute '__obj'. Did you mean: '__obl'?
+>>> def singleton(cls):
+...     @wraps(cls, updated=())
+...     def SingleClassCreator(*args, **kwargs):
+...         if SingleClassCreator.__obj is None:
+...              SingleClassCreator.__obj = cls(*args, kwargs)
+...         return SingleClassCreator.__obj
+...     SingleClassCreator.__obj = None
+...     return SingleClassCreator
+...
+>>> @singleton
+... class A:
+...     pass
+...
+>>> a1 = A()
+Traceback (most recent call last):
+  File "<python-input-28>", line 1, in <module>
+    a1 = A()
+  File "<python-input-26>", line 5, in SingleClassCreator
+    SingleClassCreator.__obj = cls(*args, kwargs)
+                               ~~~^^^^^^^^^^^^^^^
+TypeError: A() takes no arguments
+>>> def singleton(cls):
+...     @wraps(cls, updated=())
+...     def SingleClassCreator(*args, **kwargs):
+...         if SingleClassCreator.__obj is None:
+...              SingleClassCreator.__obj = cls(*args, **kwargs)
+...         return SingleClassCreator.__obj
+...     SingleClassCreator.__obj = None
+...     return SingleClassCreator
+...
+>>> @singleton
+... class A:
+...     pass
+...
+>>> a1 = A()
+>>> A
+<function A at 0x0000023ACDA237F0>
+>>> a1
+<__main__.A object at 0x0000023ACD5A3A10>
+>>> a2 = A()
+>>> a2
+<__main__.A object at 0x0000023ACD5A3A10>
+>>> a1 is a2
+True
+>>> a1.s = 'z'
+>>> a2.s
+'z'
+>>> class std:
+...     class ifstream:
+...         def __lshift__(self, other):
+...             if self.stream is not None:
+...                 print (other, end=' ', file=self.stream)
+...             else:
+...                 print(other, end=' ')
+...             return self if isinstance(other, EndlType) else None
+...         def __init__(self, file=None):
+...             self.stream = file
+...     @singletone
+...     class EndlType:
+...         __slots__ = tuple()
+...         def __str__(self):
+...             return '\n'
+...     endl = EndlType()
+...
+Traceback (most recent call last):
+  File "<python-input-39>", line 1, in <module>
+    class std:
+    ...<14 lines>...
+        endl = EndlType()
+  File "<python-input-39>", line 11, in std
+    @singletone
+     ^^^^^^^^^^
+NameError: name 'singletone' is not defined. Did you mean: 'singleton'?
+>>> class std:
+...     class ifstream:
+...         def __lshift__(self, other):
+...             if self.stream is not None:
+...                 print (other, end=' ', file=self.stream)
+...             else:
+...                 print(other, end=' ')
+...             return self if isinstance(other, EndlType) else None
+...         def __init__(self, file=None):
+...             self.stream = file
+...     @singleton
+...     class EndlType:
+...         __slots__ = tuple()
+...         def __str__(self):
+...             return '\n'
+...     endl = EndlType()
+...
+>>> st = std.ifstream()
+>>> st << a1
+Traceback (most recent call last):
+  File "<python-input-42>", line 1, in <module>
+    st << a1
+    ~~~^^~~~
+  File "<python-input-40>", line 8, in __lshift__
+    return self if isinstance(other, EndlType) else None
+                                     ^^^^^^^^
+NameError: name 'EndlType' is not defined
+<__main__.A object at 0x0000023ACD5A3A10> >>>
+>>> std.endl
+<__main__.std.EndlType object at 0x0000023ACDAB8280>
+>>> type(std.endl)
+<class '__main__.std.EndlType'>
+>>> class std:
+...     class ifstream:
+...         def __lshift__(self, other):
+...             if self.stream is not None:
+...                 print (other, end=' ', file=self.stream)
+...             else:
+...                 print(other, end=' ')
+...             return self if other is endl else None
+...         def __init__(self, file=None):
+...             self.stream = file
+...     @singleton
+...     class EndlType:
+...         __slots__ = tuple()
+...         def __str__(self):
+...             return '\n'
+...     endl = EndlType()
+...
+>>> st << a1
+Traceback (most recent call last):
+  File "<python-input-47>", line 1, in <module>
+    st << a1
+    ~~~^^~~~
+  File "<python-input-40>", line 8, in __lshift__
+    return self if isinstance(other, EndlType) else None
+                                     ^^^^^^^^
+NameError: name 'EndlType' is not defined
+<__main__.A object at 0x0000023ACD5A3A10> >>>
+>>> st = std.ifstream()
+>>> st << a1
+Traceback (most recent call last):
+  File "<python-input-50>", line 1, in <module>
+    st << a1
+    ~~~^^~~~
+  File "<python-input-46>", line 8, in __lshift__
+    return self if other is endl else None
+                            ^^^^
+NameError: name 'endl' is not defined
+>>> class std:ject at 0x0000023ACD5A3A10> >>> st << a1
+...     class ifstream:
+...         def __lshift__(self, other):
+...             if self.stream is not None:
+...                 print (other, end=' ', file=self.stream)
+...             else:
+...                 print(other, end=' ')
+...             return self if other is std.endl else None
+...         def __init__(self, file=None):
+...             self.stream = file
+...     @singleton
+...     class EndlType:
+...         __slots__ = tuple()
+...         def __str__(self):
+...             return '\n'
+...     endl = EndlType()
+...
+>>> st = ifstream()
+Traceback (most recent call last):
+  File "<python-input-52>", line 1, in <module>
+    st = ifstream()
+         ^^^^^^^^
+NameError: name 'ifstream' is not defined
+>>> st = std.ifstream()
+>>> st << a1
+<__main__.A object at 0x0000023ACD5A3A10> >>>
+>>> st << 2123 << a1 << "qwerttjkgmjnh" << A << std.endl
+Traceback (most recent call last):
+  File "<python-input-56>", line 1, in <module>
+    st << 2123 << a1 << "qwerttjkgmjnh" << A << std.endl
+    ~~~~~~~~~~~^^~~~
+TypeError: unsupported operand type(s) for <<: 'NoneType' and 'A'
+>>> class std:
+...     class ifstream:
+...         def __lshift__(self, other):
+...             if self.stream is not None:
+...                 print (other, end=' ', file=self.stream)
+...             else:
+...                 print(other, end=' ')
+...             return self if other is not std.endl else None
+...         def __init__(self, file=None):
+...             self.stream = file
+...     @singleton
+...     class EndlType:
+...         __slots__ = tuple()
+...         def __str__(self):
+...             return '\n'
+...     endl = EndlType()
+...
+>>> st = std.ifstream()
+>>> st << 2123 << a1 << "qwerttjkgmjnh" << A << std.endl
+2123 <__main__.A object at 0x0000023ACD5A3A10> qwerttjkgmjnh <function A at 0x0000023ACDA237F0>
+ >>> st = std.ifstream()
+>>> st = std.ifstream()
+>>> st << 2123 << a1 << "qwerttjkgmjnh" << A << std.endl
+2123 <__main__.A object at 0x0000023ACD5A3A10> qwerttjkgmjnh <function A at 0x0000023ACDA237F0>
+ >>> st << 2123 << a1 << "qwerttjkgmjnh" << A << std.endl
+2123 <__main__.A object at 0x0000023ACD5A3A10> qwerttjkgmjnh <function A at 0x0000023ACDA237F0>
+ >>> st << 2123 << a1 << "qwerttjkgmjnh" << A << std.endl
+2123 <__main__.A object at 0x0000023ACD5A3A10> qwerttjkgmjnh <function A at 0x0000023ACDA237F0>
+ >>> st << 2123 << a1 << "qwerttjkgmjnh" << A << std.endl
+2123 <__main__.A object at 0x0000023ACD5A3A10> qwerttjkgmjnh <function A at 0x0000023ACDA237F0>
+ >>> st << 2123 << a1 << "qwerttjkgmjnh" << A << std.endl
+2123 <__main__.A object at 0x0000023ACD5A3A10> qwerttjkgmjnh <function A at 0x0000023ACDA237F0>
+ >>>
