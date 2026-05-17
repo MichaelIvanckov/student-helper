@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'main_window_uiYBxpCy.ui'
+## Form generated from reading UI file 'main_window_uiGjeYPV.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.11.1
 ##
@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(771, 600)
+        MainWindow.resize(802, 600)
         MainWindow.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         MainWindow.setDocumentMode(False)
         MainWindow.setDockNestingEnabled(False)
@@ -71,7 +71,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 351, 591))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 382, 591))
         self.verticalLayout_6 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
         self.verticalSpacer = QSpacerItem(20, 5, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
@@ -176,7 +176,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(MainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 771, 33))
+        self.menuBar.setGeometry(QRect(0, 0, 802, 33))
         self.menu = QMenu(self.menuBar)
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menuBar)
@@ -242,6 +242,6 @@ class Ui_MainWindow(object):
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u041f\u0440\u043e\u0444\u0438\u043b\u044c", None))
         self.menu_2.setTitle(QCoreApplication.translate("MainWindow", u"\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438", None))
         self.dockWidget_6.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u0418\u0435\u0440\u0430\u0440\u0445\u0438\u044f \u0431\u0430\u0437\u044b \u0437\u043d\u0430\u043d\u0438\u0439", None))
-        self.dockWidget_7.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u0421\u0432\u0439\u0441\u0442\u0432\u0430", None))
+        self.dockWidget_7.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u0421\u0432\u043e\u0439\u0441\u0442\u0432\u0430", None))
     # retranslateUi
 

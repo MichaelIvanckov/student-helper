@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>771</width>
+    <width>802</width>
     <height>600</height>
    </rect>
   </property>
@@ -84,7 +84,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>351</width>
+               <width>382</width>
                <height>591</height>
               </rect>
              </property>
@@ -279,7 +279,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>771</width>
+     <width>802</width>
      <height>33</height>
     </rect>
    </property>
@@ -323,7 +323,7 @@
   </widget>
   <widget class="QDockWidget" name="dockWidget_7">
    <property name="windowTitle">
-    <string>Свйства</string>
+    <string>Свойства</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
