@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>813</width>
-    <height>600</height>
+    <width>903</width>
+    <height>609</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,14 +27,20 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QLineEdit" name="lineEdit">
+       <widget class="QLineEdit" name="search_line_edit">
+        <property name="inputMask">
+         <string/>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
         <property name="placeholderText">
-         <string>Поиск</string>
+         <string>Поиск по тексту заметки в записи</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="search_button">
         <property name="text">
          <string>Найти</string>
         </property>
@@ -43,7 +49,7 @@
      </layout>
     </item>
     <item>
-     <widget class="QTabWidget" name="tabWidget">
+     <widget class="QTabWidget" name="main_tabs">
       <property name="enabled">
        <bool>true</bool>
       </property>
@@ -88,7 +94,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>355</width>
+               <width>445</width>
                <height>591</height>
               </rect>
              </property>
@@ -159,14 +165,14 @@
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_3">
                 <item>
-                 <widget class="QPushButton" name="pushButton_3">
+                 <widget class="QPushButton" name="create_entry_button">
                   <property name="text">
                    <string>Создать запись</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="pushButton_4">
+                 <widget class="QPushButton" name="create_section_button">
                   <property name="text">
                    <string>Создать раздел</string>
                   </property>
@@ -191,7 +197,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_2">
+               <widget class="QPushButton" name="load_photo_by_exif_button">
                 <property name="text">
                  <string>Загрузить фото по EXIF</string>
                 </property>
@@ -228,7 +234,7 @@
                  <item>
                   <layout class="QVBoxLayout" name="verticalLayout_5">
                    <item>
-                    <widget class="QListWidget" name="listWidget">
+                    <widget class="QListWidget" name="last_opened_list">
                      <property name="frameShadow">
                       <enum>QFrame::Shadow::Sunken</enum>
                      </property>
@@ -259,7 +265,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QCalendarWidget" name="calendarWidget"/>
+               <widget class="QCalendarWidget" name="calendar"/>
               </item>
              </layout>
             </widget>
@@ -273,7 +279,6 @@
        <attribute name="title">
         <string>Tab 2</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_8"/>
       </widget>
      </widget>
     </item>
@@ -284,7 +289,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>813</width>
+     <width>903</width>
      <height>33</height>
     </rect>
    </property>
@@ -302,7 +307,7 @@
    <addaction name="menu_2"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="QDockWidget" name="dockWidget_6">
+  <widget class="QDockWidget" name="hierarchy_dock">
    <property name="floating">
     <bool>false</bool>
    </property>
@@ -315,7 +320,7 @@
    <widget class="QWidget" name="dockWidgetContents_6">
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
-      <widget class="QTreeWidget" name="treeWidget">
+      <widget class="QTreeWidget" name="sections_tree">
        <column>
         <property name="text">
          <string notr="true">Разделы</string>
@@ -326,9 +331,9 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_7">
+  <widget class="QDockWidget" name="properties_dock">
    <property name="windowTitle">
-    <string>Свойства</string>
+    <string>Свйства</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -343,6 +348,18 @@
        <property name="frameShadow">
         <enum>QFrame::Shadow::Raised</enum>
        </property>
+       <layout class="QVBoxLayout" name="verticalLayout_8">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>О записи:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextBrowser" name="textBrowser"/>
+        </item>
+       </layout>
       </widget>
      </item>
     </layout>

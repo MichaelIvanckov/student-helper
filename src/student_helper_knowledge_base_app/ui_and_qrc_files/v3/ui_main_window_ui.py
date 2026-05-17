@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'main_window_uixiuLdc.ui'
+## Form generated from reading UI file 'main_window_uiSpFFJk.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.11.1
 ##
@@ -21,13 +21,14 @@ from PySide6.QtWidgets import (QApplication, QCalendarWidget, QDockWidget, QFram
     QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
     QMenu, QMenuBar, QPushButton, QScrollArea,
     QSizePolicy, QSpacerItem, QStatusBar, QTabWidget,
-    QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
+    QTextBrowser, QTreeWidget, QTreeWidgetItem, QVBoxLayout,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(813, 600)
+        MainWindow.resize(1001, 609)
         MainWindow.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         MainWindow.setDocumentMode(False)
         MainWindow.setDockNestingEnabled(False)
@@ -37,29 +38,36 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.lineEdit = QLineEdit(self.centralwidget)
-        self.lineEdit.setObjectName(u"lineEdit")
-
-        self.horizontalLayout.addWidget(self.lineEdit)
-
         self.pushButton = QPushButton(self.centralwidget)
         self.pushButton.setObjectName(u"pushButton")
+        self.pushButton.setMaximumSize(QSize(30, 16777215))
 
         self.horizontalLayout.addWidget(self.pushButton)
+
+        self.search_line_edit = QLineEdit(self.centralwidget)
+        self.search_line_edit.setObjectName(u"search_line_edit")
+        self.search_line_edit.setMaximumSize(QSize(16777215, 16777215))
+
+        self.horizontalLayout.addWidget(self.search_line_edit)
+
+        self.search_button = QPushButton(self.centralwidget)
+        self.search_button.setObjectName(u"search_button")
+
+        self.horizontalLayout.addWidget(self.search_button)
 
 
         self.verticalLayout_3.addLayout(self.horizontalLayout)
 
-        self.tabWidget = QTabWidget(self.centralwidget)
-        self.tabWidget.setObjectName(u"tabWidget")
-        self.tabWidget.setEnabled(True)
-        self.tabWidget.setAutoFillBackground(False)
-        self.tabWidget.setTabPosition(QTabWidget.TabPosition.North)
-        self.tabWidget.setTabShape(QTabWidget.TabShape.Rounded)
-        self.tabWidget.setDocumentMode(False)
-        self.tabWidget.setTabsClosable(True)
-        self.tabWidget.setMovable(True)
-        self.tabWidget.setTabBarAutoHide(True)
+        self.main_tabs = QTabWidget(self.centralwidget)
+        self.main_tabs.setObjectName(u"main_tabs")
+        self.main_tabs.setEnabled(True)
+        self.main_tabs.setAutoFillBackground(False)
+        self.main_tabs.setTabPosition(QTabWidget.TabPosition.North)
+        self.main_tabs.setTabShape(QTabWidget.TabShape.Rounded)
+        self.main_tabs.setDocumentMode(False)
+        self.main_tabs.setTabsClosable(True)
+        self.main_tabs.setMovable(True)
+        self.main_tabs.setTabBarAutoHide(True)
         self.tab = QWidget()
         self.tab.setObjectName(u"tab")
         self.horizontalLayout_2 = QHBoxLayout(self.tab)
@@ -71,7 +79,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 393, 591))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 458, 591))
         self.verticalLayout_6 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
         self.verticalSpacer = QSpacerItem(20, 5, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
@@ -100,15 +108,15 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.pushButton_3 = QPushButton(self.scrollAreaWidgetContents)
-        self.pushButton_3.setObjectName(u"pushButton_3")
+        self.create_entry_button = QPushButton(self.scrollAreaWidgetContents)
+        self.create_entry_button.setObjectName(u"create_entry_button")
 
-        self.horizontalLayout_3.addWidget(self.pushButton_3)
+        self.horizontalLayout_3.addWidget(self.create_entry_button)
 
-        self.pushButton_4 = QPushButton(self.scrollAreaWidgetContents)
-        self.pushButton_4.setObjectName(u"pushButton_4")
+        self.create_section_button = QPushButton(self.scrollAreaWidgetContents)
+        self.create_section_button.setObjectName(u"create_section_button")
 
-        self.horizontalLayout_3.addWidget(self.pushButton_4)
+        self.horizontalLayout_3.addWidget(self.create_section_button)
 
 
         self.verticalLayout_6.addLayout(self.horizontalLayout_3)
@@ -117,10 +125,10 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_6.addItem(self.verticalSpacer_4)
 
-        self.pushButton_2 = QPushButton(self.scrollAreaWidgetContents)
-        self.pushButton_2.setObjectName(u"pushButton_2")
+        self.load_photo_by_exif_button = QPushButton(self.scrollAreaWidgetContents)
+        self.load_photo_by_exif_button.setObjectName(u"load_photo_by_exif_button")
 
-        self.verticalLayout_6.addWidget(self.pushButton_2)
+        self.verticalLayout_6.addWidget(self.load_photo_by_exif_button)
 
         self.verticalSpacer_2 = QSpacerItem(20, 5, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 
@@ -137,12 +145,12 @@ class Ui_MainWindow(object):
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
         self.verticalLayout_5 = QVBoxLayout()
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.listWidget = QListWidget(self.groupBox)
-        self.listWidget.setObjectName(u"listWidget")
-        self.listWidget.setFrameShadow(QFrame.Shadow.Sunken)
-        self.listWidget.setSortingEnabled(True)
+        self.last_opened_list = QListWidget(self.groupBox)
+        self.last_opened_list.setObjectName(u"last_opened_list")
+        self.last_opened_list.setFrameShadow(QFrame.Shadow.Sunken)
+        self.last_opened_list.setSortingEnabled(True)
 
-        self.verticalLayout_5.addWidget(self.listWidget)
+        self.verticalLayout_5.addWidget(self.last_opened_list)
 
 
         self.verticalLayout_7.addLayout(self.verticalLayout_5)
@@ -154,10 +162,10 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_6.addItem(self.verticalSpacer_5)
 
-        self.calendarWidget = QCalendarWidget(self.scrollAreaWidgetContents)
-        self.calendarWidget.setObjectName(u"calendarWidget")
+        self.calendar = QCalendarWidget(self.scrollAreaWidgetContents)
+        self.calendar.setObjectName(u"calendar")
 
-        self.verticalLayout_6.addWidget(self.calendarWidget)
+        self.verticalLayout_6.addWidget(self.calendar)
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
@@ -166,19 +174,17 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_2.addLayout(self.verticalLayout_4)
 
-        self.tabWidget.addTab(self.tab, "")
+        self.main_tabs.addTab(self.tab, "")
         self.tab_2 = QWidget()
         self.tab_2.setObjectName(u"tab_2")
-        self.verticalLayout_8 = QVBoxLayout(self.tab_2)
-        self.verticalLayout_8.setObjectName(u"verticalLayout_8")
-        self.tabWidget.addTab(self.tab_2, "")
+        self.main_tabs.addTab(self.tab_2, "")
 
-        self.verticalLayout_3.addWidget(self.tabWidget)
+        self.verticalLayout_3.addWidget(self.main_tabs)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(MainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 813, 33))
+        self.menuBar.setGeometry(QRect(0, 0, 1001, 33))
         self.menu = QMenu(self.menuBar)
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menuBar)
@@ -187,25 +193,26 @@ class Ui_MainWindow(object):
         self.statusBar = QStatusBar(MainWindow)
         self.statusBar.setObjectName(u"statusBar")
         MainWindow.setStatusBar(self.statusBar)
-        self.dockWidget_6 = QDockWidget(MainWindow)
-        self.dockWidget_6.setObjectName(u"dockWidget_6")
-        self.dockWidget_6.setFloating(False)
+        self.hierarchy_dock = QDockWidget(MainWindow)
+        self.hierarchy_dock.setObjectName(u"hierarchy_dock")
+        self.hierarchy_dock.setEnabled(True)
+        self.hierarchy_dock.setFloating(False)
         self.dockWidgetContents_6 = QWidget()
         self.dockWidgetContents_6.setObjectName(u"dockWidgetContents_6")
         self.verticalLayout_2 = QVBoxLayout(self.dockWidgetContents_6)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.treeWidget = QTreeWidget(self.dockWidgetContents_6)
+        self.sections_tree = QTreeWidget(self.dockWidgetContents_6)
         __qtreewidgetitem = QTreeWidgetItem()
         __qtreewidgetitem.setText(0, u"\u0420\u0430\u0437\u0434\u0435\u043b\u044b")
-        self.treeWidget.setHeaderItem(__qtreewidgetitem)
-        self.treeWidget.setObjectName(u"treeWidget")
+        self.sections_tree.setHeaderItem(__qtreewidgetitem)
+        self.sections_tree.setObjectName(u"sections_tree")
 
-        self.verticalLayout_2.addWidget(self.treeWidget)
+        self.verticalLayout_2.addWidget(self.sections_tree)
 
-        self.dockWidget_6.setWidget(self.dockWidgetContents_6)
-        MainWindow.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.dockWidget_6)
-        self.dockWidget_7 = QDockWidget(MainWindow)
-        self.dockWidget_7.setObjectName(u"dockWidget_7")
+        self.hierarchy_dock.setWidget(self.dockWidgetContents_6)
+        MainWindow.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.hierarchy_dock)
+        self.properties_dock = QDockWidget(MainWindow)
+        self.properties_dock.setObjectName(u"properties_dock")
         self.dockWidgetContents_7 = QWidget()
         self.dockWidgetContents_7.setObjectName(u"dockWidgetContents_7")
         self.verticalLayout = QVBoxLayout(self.dockWidgetContents_7)
@@ -214,18 +221,32 @@ class Ui_MainWindow(object):
         self.frame.setObjectName(u"frame")
         self.frame.setFrameShape(QFrame.Shape.StyledPanel)
         self.frame.setFrameShadow(QFrame.Shadow.Raised)
+        self.verticalLayout_8 = QVBoxLayout(self.frame)
+        self.verticalLayout_8.setObjectName(u"verticalLayout_8")
+        self.label_2 = QLabel(self.frame)
+        self.label_2.setObjectName(u"label_2")
+
+        self.verticalLayout_8.addWidget(self.label_2)
+
+        self.textBrowser = QTextBrowser(self.frame)
+        self.textBrowser.setObjectName(u"textBrowser")
+
+        self.verticalLayout_8.addWidget(self.textBrowser)
+
 
         self.verticalLayout.addWidget(self.frame)
 
-        self.dockWidget_7.setWidget(self.dockWidgetContents_7)
-        MainWindow.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dockWidget_7)
+        self.properties_dock.setWidget(self.dockWidgetContents_7)
+        MainWindow.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.properties_dock)
 
         self.menuBar.addAction(self.menu.menuAction())
         self.menuBar.addAction(self.menu_2.menuAction())
 
         self.retranslateUi(MainWindow)
+        self.pushButton.clicked["bool"].connect(self.hierarchy_dock.show)
+        self.hierarchy_dock.destroyed.connect(self.pushButton.show)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.main_tabs.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -233,18 +254,22 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        self.lineEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0438\u0441\u043a", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u041d\u0430\u0439\u0442\u0438", None))
+        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u2630", None))
+        self.search_line_edit.setInputMask("")
+        self.search_line_edit.setText("")
+        self.search_line_edit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0438\u0441\u043a \u043f\u043e \u0442\u0435\u043a\u0441\u0442\u0443 \u0437\u0430\u043c\u0435\u0442\u043a\u0438 \u0432 \u0437\u0430\u043f\u0438\u0441\u0438", None))
+        self.search_button.setText(QCoreApplication.translate("MainWindow", u"\u041d\u0430\u0439\u0442\u0438", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-weight:700;\">\u041d\u0430\u0447\u0430\u043b\u043e \u0440\u0430\u0431\u043e\u0442\u044b</span></p></body></html>", None))
-        self.pushButton_3.setText(QCoreApplication.translate("MainWindow", u"\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0437\u0430\u043f\u0438\u0441\u044c", None))
-        self.pushButton_4.setText(QCoreApplication.translate("MainWindow", u"\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0440\u0430\u0437\u0434\u0435\u043b", None))
-        self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0444\u043e\u0442\u043e \u043f\u043e EXIF", None))
+        self.create_entry_button.setText(QCoreApplication.translate("MainWindow", u"\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0437\u0430\u043f\u0438\u0441\u044c", None))
+        self.create_section_button.setText(QCoreApplication.translate("MainWindow", u"\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0440\u0430\u0437\u0434\u0435\u043b", None))
+        self.load_photo_by_exif_button.setText(QCoreApplication.translate("MainWindow", u"\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0444\u043e\u0442\u043e \u043f\u043e EXIF", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0435 \u043e\u0442\u043a\u0440\u044b\u0442\u044b\u0435 \u0437\u0430\u043f\u0438\u0441\u0438", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"Tab 1", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"Tab 2", None))
+        self.main_tabs.setTabText(self.main_tabs.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"Tab 1", None))
+        self.main_tabs.setTabText(self.main_tabs.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"Tab 2", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u041f\u0440\u043e\u0444\u0438\u043b\u044c", None))
         self.menu_2.setTitle(QCoreApplication.translate("MainWindow", u"\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438", None))
-        self.dockWidget_6.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u0418\u0435\u0440\u0430\u0440\u0445\u0438\u044f \u0431\u0430\u0437\u044b \u0437\u043d\u0430\u043d\u0438\u0439", None))
-        self.dockWidget_7.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u0421\u0432\u043e\u0439\u0441\u0442\u0432\u0430", None))
+        self.hierarchy_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u0418\u0435\u0440\u0430\u0440\u0445\u0438\u044f \u0431\u0430\u0437\u044b \u0437\u043d\u0430\u043d\u0438\u0439", None))
+        self.properties_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u0421\u0432\u0439\u0441\u0442\u0432\u0430", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u041e \u0437\u0430\u043f\u0438\u0441\u0438:", None))
     # retranslateUi
 
