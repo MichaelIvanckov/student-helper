@@ -15,9 +15,13 @@ class BrowserTabs(QTabWidget):
 
         # Создаём кнопку «+» и помещаем её в правый угол панели вкладок
         self.add_tab_button = QPushButton("+")
-        self.add_tab_button.setFixedSize(30, 25)  # небольшой размер
+        # self.add_tab_button.setFixedSize(30, 25)  # небольшой размер
+        self.add_tab_button.setFixedWidth(35)
+        self.properties_button = QPushButton("=")
+        self.properties_button.setFixedWidth(35)
         self.add_tab_button.clicked.connect(self.add_new_tab)
         self.setCornerWidget(self.add_tab_button, Qt.Corner.TopRightCorner)
+        self.setCornerWidget(self.properties_button, Qt.Corner.TopLeftCorner)
 
         # Добавляем первую вкладку
         self.add_new_tab()
