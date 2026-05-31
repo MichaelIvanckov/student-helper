@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'main_window_uiYkumLi.ui'
+## Form generated from reading UI file 'main_window_uibXXBrH.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.11.1
 ##
@@ -16,56 +16,103 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QCalendarWidget, QDockWidget, QFrame,
-    QGroupBox, QHBoxLayout, QLabel, QLineEdit,
+from PySide6.QtWidgets import (QApplication, QCalendarWidget, QFrame, QGroupBox,
+    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
     QListWidget, QListWidgetItem, QMainWindow, QMenu,
     QMenuBar, QPushButton, QScrollArea, QSizePolicy,
-    QSpacerItem, QStatusBar, QTabWidget, QTextBrowser,
-    QVBoxLayout, QWidget)
+    QSpacerItem, QSplitter, QStatusBar, QTabWidget,
+    QTextBrowser, QTreeWidget, QTreeWidgetItem, QVBoxLayout,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1001, 607)
+        MainWindow.setEnabled(True)
+        MainWindow.resize(1011, 653)
         MainWindow.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         MainWindow.setDocumentMode(False)
         MainWindow.setDockNestingEnabled(False)
+        MainWindow.setUnifiedTitleAndToolBarOnMac(False)
+        self.action = QAction(MainWindow)
+        self.action.setObjectName(u"action")
+        self.action_2 = QAction(MainWindow)
+        self.action_2.setObjectName(u"action_2")
+        self.action_3 = QAction(MainWindow)
+        self.action_3.setObjectName(u"action_3")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.verticalLayout_3 = QVBoxLayout(self.centralwidget)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_9 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_9.setObjectName(u"verticalLayout_9")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.widget = QWidget(self.centralwidget)
-        self.widget.setObjectName(u"widget")
-        self.widget.setProperty(u"bool_container", False)
-
-        self.horizontalLayout.addWidget(self.widget)
-
         self.pushButton = QPushButton(self.centralwidget)
         self.pushButton.setObjectName(u"pushButton")
+        self.pushButton.setMinimumSize(QSize(40, 40))
         self.pushButton.setMaximumSize(QSize(30, 16777215))
+        font = QFont()
+        font.setPointSize(17)
+        self.pushButton.setFont(font)
 
         self.horizontalLayout.addWidget(self.pushButton)
 
         self.search_line_edit = QLineEdit(self.centralwidget)
         self.search_line_edit.setObjectName(u"search_line_edit")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.search_line_edit.sizePolicy().hasHeightForWidth())
+        self.search_line_edit.setSizePolicy(sizePolicy)
+        self.search_line_edit.setMinimumSize(QSize(0, 40))
         self.search_line_edit.setMaximumSize(QSize(16777215, 16777215))
+        font1 = QFont()
+        font1.setPointSize(12)
+        self.search_line_edit.setFont(font1)
+        self.search_line_edit.setFrame(True)
 
         self.horizontalLayout.addWidget(self.search_line_edit)
 
         self.search_button = QPushButton(self.centralwidget)
         self.search_button.setObjectName(u"search_button")
+        self.search_button.setMinimumSize(QSize(0, 40))
+        self.search_button.setFont(font1)
 
         self.horizontalLayout.addWidget(self.search_button)
 
 
-        self.verticalLayout_3.addLayout(self.horizontalLayout)
+        self.verticalLayout_9.addLayout(self.horizontalLayout)
 
-        self.main_tabs = QTabWidget(self.centralwidget)
+        self.splitter = QSplitter(self.centralwidget)
+        self.splitter.setObjectName(u"splitter")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.splitter.sizePolicy().hasHeightForWidth())
+        self.splitter.setSizePolicy(sizePolicy1)
+        self.splitter.setMinimumSize(QSize(590, 0))
+        self.splitter.setOrientation(Qt.Orientation.Horizontal)
+        self.treeWidget = QTreeWidget(self.splitter)
+        __qtreewidgetitem = QTreeWidgetItem()
+        __qtreewidgetitem.setText(0, u"1")
+        self.treeWidget.setHeaderItem(__qtreewidgetitem)
+        self.treeWidget.setObjectName(u"treeWidget")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy2.setHorizontalStretch(50)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.treeWidget.sizePolicy().hasHeightForWidth())
+        self.treeWidget.setSizePolicy(sizePolicy2)
+        self.treeWidget.setMinimumSize(QSize(60, 0))
+        self.splitter.addWidget(self.treeWidget)
+        self.main_tabs = QTabWidget(self.splitter)
         self.main_tabs.setObjectName(u"main_tabs")
         self.main_tabs.setEnabled(True)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy3.setHorizontalStretch(200)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.main_tabs.sizePolicy().hasHeightForWidth())
+        self.main_tabs.setSizePolicy(sizePolicy3)
+        self.main_tabs.setBaseSize(QSize(500, 0))
+        self.main_tabs.setContextMenuPolicy(Qt.ContextMenuPolicy.DefaultContextMenu)
         self.main_tabs.setAutoFillBackground(False)
         self.main_tabs.setTabPosition(QTabWidget.TabPosition.North)
         self.main_tabs.setTabShape(QTabWidget.TabShape.Rounded)
@@ -75,8 +122,8 @@ class Ui_MainWindow(object):
         self.main_tabs.setTabBarAutoHide(True)
         self.tab = QWidget()
         self.tab.setObjectName(u"tab")
-        self.horizontalLayout_2 = QHBoxLayout(self.tab)
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.verticalLayout_10 = QVBoxLayout(self.tab)
+        self.verticalLayout_10.setObjectName(u"verticalLayout_10")
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.scrollArea = QScrollArea(self.tab)
@@ -84,20 +131,22 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 641, 591))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 701, 631))
         self.verticalLayout_6 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.verticalSpacer = QSpacerItem(20, 5, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-
-        self.verticalLayout_6.addItem(self.verticalSpacer)
-
         self.label = QLabel(self.scrollAreaWidgetContents)
         self.label.setObjectName(u"label")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
-        self.label.setSizePolicy(sizePolicy)
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum)
+        sizePolicy4.setHorizontalStretch(0)
+        sizePolicy4.setVerticalStretch(0)
+        sizePolicy4.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
+        self.label.setSizePolicy(sizePolicy4)
+        font2 = QFont()
+        font2.setPointSize(21)
+        font2.setWeight(QFont.Thin)
+        font2.setItalic(False)
+        font2.setKerning(True)
+        self.label.setFont(font2)
         self.label.setTabletTracking(False)
         self.label.setTextFormat(Qt.TextFormat.AutoText)
         self.label.setScaledContents(False)
@@ -107,45 +156,66 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_6.addWidget(self.label)
 
-        self.verticalSpacer_3 = QSpacerItem(20, 5, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-
-        self.verticalLayout_6.addItem(self.verticalSpacer_3)
-
-        self.horizontalLayout_3 = QHBoxLayout()
+        self.frame = QFrame(self.scrollAreaWidgetContents)
+        self.frame.setObjectName(u"frame")
+        self.horizontalLayout_3 = QHBoxLayout(self.frame)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.create_entry_button = QPushButton(self.scrollAreaWidgetContents)
+        self.horizontalSpacer_2 = QSpacerItem(0, 10, QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.horizontalSpacer_2)
+
+        self.create_entry_button = QPushButton(self.frame)
         self.create_entry_button.setObjectName(u"create_entry_button")
+        self.create_entry_button.setMinimumSize(QSize(0, 40))
+        font3 = QFont()
+        font3.setPointSize(15)
+        font3.setBold(False)
+        self.create_entry_button.setFont(font3)
+        self.create_entry_button.setCheckable(False)
 
         self.horizontalLayout_3.addWidget(self.create_entry_button)
 
-        self.create_section_button = QPushButton(self.scrollAreaWidgetContents)
+        self.horizontalSpacer = QSpacerItem(10, 0, QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.horizontalSpacer)
+
+        self.create_section_button = QPushButton(self.frame)
         self.create_section_button.setObjectName(u"create_section_button")
+        self.create_section_button.setMinimumSize(QSize(0, 40))
+        font4 = QFont()
+        font4.setPointSize(15)
+        self.create_section_button.setFont(font4)
 
         self.horizontalLayout_3.addWidget(self.create_section_button)
 
+        self.horizontalSpacer_3 = QSpacerItem(0, 10, QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
 
-        self.verticalLayout_6.addLayout(self.horizontalLayout_3)
+        self.horizontalLayout_3.addItem(self.horizontalSpacer_3)
 
-        self.verticalSpacer_4 = QSpacerItem(20, 5, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 
-        self.verticalLayout_6.addItem(self.verticalSpacer_4)
+        self.verticalLayout_6.addWidget(self.frame)
 
-        self.load_photo_by_exif_button = QPushButton(self.scrollAreaWidgetContents)
+        self.frame1 = QFrame(self.scrollAreaWidgetContents)
+        self.frame1.setObjectName(u"frame1")
+        self.horizontalLayout_2 = QHBoxLayout(self.frame1)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.load_photo_by_exif_button = QPushButton(self.frame1)
         self.load_photo_by_exif_button.setObjectName(u"load_photo_by_exif_button")
+        self.load_photo_by_exif_button.setMinimumSize(QSize(0, 40))
+        self.load_photo_by_exif_button.setFont(font4)
 
-        self.verticalLayout_6.addWidget(self.load_photo_by_exif_button)
+        self.horizontalLayout_2.addWidget(self.load_photo_by_exif_button)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 5, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 
-        self.verticalLayout_6.addItem(self.verticalSpacer_2)
+        self.verticalLayout_6.addWidget(self.frame1)
 
         self.groupBox = QGroupBox(self.scrollAreaWidgetContents)
         self.groupBox.setObjectName(u"groupBox")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(150)
-        sizePolicy1.setHeightForWidth(self.groupBox.sizePolicy().hasHeightForWidth())
-        self.groupBox.setSizePolicy(sizePolicy1)
+        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
+        sizePolicy5.setHorizontalStretch(0)
+        sizePolicy5.setVerticalStretch(150)
+        sizePolicy5.setHeightForWidth(self.groupBox.sizePolicy().hasHeightForWidth())
+        self.groupBox.setSizePolicy(sizePolicy5)
         self.verticalLayout_7 = QVBoxLayout(self.groupBox)
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
         self.verticalLayout_5 = QVBoxLayout()
@@ -177,19 +247,43 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.addWidget(self.scrollArea)
 
 
-        self.horizontalLayout_2.addLayout(self.verticalLayout_4)
+        self.verticalLayout_10.addLayout(self.verticalLayout_4)
 
         self.main_tabs.addTab(self.tab, "")
         self.tab_2 = QWidget()
         self.tab_2.setObjectName(u"tab_2")
         self.main_tabs.addTab(self.tab_2, "")
+        self.splitter.addWidget(self.main_tabs)
+        self.frame_2 = QFrame(self.splitter)
+        self.frame_2.setObjectName(u"frame_2")
+        sizePolicy6 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        sizePolicy6.setHorizontalStretch(50)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.frame_2.sizePolicy().hasHeightForWidth())
+        self.frame_2.setSizePolicy(sizePolicy6)
+        self.frame_2.setMinimumSize(QSize(60, 0))
+        self.frame_2.setFrameShape(QFrame.Shape.StyledPanel)
+        self.frame_2.setFrameShadow(QFrame.Shadow.Raised)
+        self.verticalLayout_3 = QVBoxLayout(self.frame_2)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.label_3 = QLabel(self.frame_2)
+        self.label_3.setObjectName(u"label_3")
 
-        self.verticalLayout_3.addWidget(self.main_tabs)
+        self.verticalLayout_3.addWidget(self.label_3)
+
+        self.textBrowser_2 = QTextBrowser(self.frame_2)
+        self.textBrowser_2.setObjectName(u"textBrowser_2")
+
+        self.verticalLayout_3.addWidget(self.textBrowser_2)
+
+        self.splitter.addWidget(self.frame_2)
+
+        self.verticalLayout_9.addWidget(self.splitter)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(MainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1001, 33))
+        self.menuBar.setGeometry(QRect(0, 0, 1011, 33))
         self.menu = QMenu(self.menuBar)
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menuBar)
@@ -198,36 +292,12 @@ class Ui_MainWindow(object):
         self.statusBar = QStatusBar(MainWindow)
         self.statusBar.setObjectName(u"statusBar")
         MainWindow.setStatusBar(self.statusBar)
-        self.properties_dock = QDockWidget(MainWindow)
-        self.properties_dock.setObjectName(u"properties_dock")
-        self.dockWidgetContents_7 = QWidget()
-        self.dockWidgetContents_7.setObjectName(u"dockWidgetContents_7")
-        self.verticalLayout = QVBoxLayout(self.dockWidgetContents_7)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.frame = QFrame(self.dockWidgetContents_7)
-        self.frame.setObjectName(u"frame")
-        self.frame.setFrameShape(QFrame.Shape.StyledPanel)
-        self.frame.setFrameShadow(QFrame.Shadow.Raised)
-        self.verticalLayout_8 = QVBoxLayout(self.frame)
-        self.verticalLayout_8.setObjectName(u"verticalLayout_8")
-        self.label_2 = QLabel(self.frame)
-        self.label_2.setObjectName(u"label_2")
-
-        self.verticalLayout_8.addWidget(self.label_2)
-
-        self.textBrowser = QTextBrowser(self.frame)
-        self.textBrowser.setObjectName(u"textBrowser")
-
-        self.verticalLayout_8.addWidget(self.textBrowser)
-
-
-        self.verticalLayout.addWidget(self.frame)
-
-        self.properties_dock.setWidget(self.dockWidgetContents_7)
-        MainWindow.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.properties_dock)
 
         self.menuBar.addAction(self.menu.menuAction())
         self.menuBar.addAction(self.menu_2.menuAction())
+        self.menu.addAction(self.action_2)
+        self.menu.addAction(self.action_3)
+        self.menu_2.addAction(self.action)
 
         self.retranslateUi(MainWindow)
 
@@ -238,7 +308,10 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u043c\u043e\u0449\u043d\u0438\u043a \u0441\u0442\u0443\u0434\u0435\u043d\u0442\u0430", None))
+        self.action.setText(QCoreApplication.translate("MainWindow", u"\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438", None))
+        self.action_2.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0431\u0430\u0437\u0443", None))
+        self.action_3.setText(QCoreApplication.translate("MainWindow", u"\u041d\u0430\u0432\u0430\u043b\u0438\u0442\u044c \u0431\u0430\u0437\u044b", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u2630", None))
         self.search_line_edit.setInputMask("")
         self.search_line_edit.setText("")
@@ -251,9 +324,8 @@ class Ui_MainWindow(object):
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0435 \u043e\u0442\u043a\u0440\u044b\u0442\u044b\u0435 \u0437\u0430\u043f\u0438\u0441\u0438", None))
         self.main_tabs.setTabText(self.main_tabs.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"Tab 1", None))
         self.main_tabs.setTabText(self.main_tabs.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"Tab 2", None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"\u041e \u0437\u0430\u043f\u0438\u0441\u0438:", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u041f\u0440\u043e\u0444\u0438\u043b\u044c", None))
         self.menu_2.setTitle(QCoreApplication.translate("MainWindow", u"\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438", None))
-        self.properties_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u0421\u0432\u0439\u0441\u0442\u0432\u0430", None))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u041e \u0437\u0430\u043f\u0438\u0441\u0438:", None))
     # retranslateUi
 
