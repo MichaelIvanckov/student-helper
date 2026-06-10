@@ -255,6 +255,18 @@ class DataService(QObject):
             session.refresh(file_obj)
             return file_obj
 
+    def update_file(self, file_id: int, **kwargs) -> Optional[File]:
+        with self._get_session() as session:
+            file_obj = session.query(File).get(file_id)
+            if not file_obj:
+                return None
+            for key, value in kwargs.items():
+                if hasattr(file_obj, key):
+                    setattr(file_obj, key, value)
+            self._safe_commit(session, "Не удалось обновить файл")
+            session.refresh(file_obj)
+            return file_obj
+
     def attach_file_to_entry(self, entry_id: int, file_id: int,
                              link_type: str = 'attachment',
                              order_in_entry: Optional[int] = None,
@@ -484,7 +496,12 @@ class DataService(QObject):
 
         # Теперь добавляем файл и привязываем
         try:
+            # Добавляем файл без метаданных
             file_obj = self.add_file(photo_path)
+            # Обновляем metadata_json
+            file_obj.metadata_json = json.dumps({"auto_added": True})
+            self.update_file(file_obj.id, metadata_json=file_obj.metadata_json)
+            # Прикрепляем к записи
             self.attach_file_to_entry(entry.id, file_obj.id, link_type='photo')
         except DataServiceError as e:
             # Если файл уже существует? Удалим запись? Упростим: пробрасываем ошибку
