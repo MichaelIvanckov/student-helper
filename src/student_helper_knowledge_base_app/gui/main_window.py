@@ -15,8 +15,8 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Signal
 
-from ..core.services import DataService, DataServiceError
-from ..ui_and_qrc_files.v3.ui_main_window_ui import Ui_MainWindow  # сгенерированный из .ui
+from src.student_helper_knowledge_base_app.core.services import DataService, DataServiceError
+from src.student_helper_knowledge_base_app.ui_and_qrc_files.v3.ui_main_window_ui import Ui_MainWindow  # сгенерированный из .ui
 
 
 # ----------------------------------------------------------------------
