@@ -14,7 +14,6 @@ from sqlalchemy import (
     create_engine, Column, Integer, String, Text, Boolean, DateTime, Date,
     ForeignKey, UniqueConstraint, CheckConstraint, Index
 )
-from sqlalchemy.ext.declarative import declarative_base as declarative_base_
 from sqlalchemy.orm import relationship, sessionmaker, declarative_base
 
 
@@ -37,8 +36,8 @@ class Section(Base):
 
     # Отношения
     parent = relationship('Section', remote_side=[id], backref='children')
-    entries = relationship('Entry', back_populates='section', cascade='all, delete-orphan')
-    topics = relationship('Topic', back_populates='section', cascade='all, delete-orphan')
+    entries = relationship('Entry', back_populates='section', cascade='all, delete-orphan', passive_deletes=True)
+    topics = relationship('Topic', back_populates='section', cascade='all, delete-orphan', passive_deletes=True)
 
     def __repr__(self):
         return f"<Section(id={self.id}, name='{self.name}')>"
@@ -55,7 +54,9 @@ class Entry(Base):
             "(is_global = 1 OR lecture_date IS NOT NULL)",
             name="ck_entry_has_date_if_not_global"
         ),
-        Index('idx_entry_complete', 'is_complete'),   # новый индекс для фильтрации
+        Index('idx_entry_section', 'section_id'),
+        Index('idx_entry_lecture_date', 'lecture_date'), # индекс для фильтрации и выбора по дате лекции
+        Index('idx_entry_complete', 'is_complete'),   # индекс для фильтрации по заполненности
     )
 
     id = Column(Integer, primary_key=True)
@@ -70,7 +71,7 @@ class Entry(Base):
 
     # Отношения
     section = relationship('Section', back_populates='entries')
-    file_links = relationship('FileLink', back_populates='entry', cascade='all, delete-orphan')
+    file_links = relationship('FileLink', back_populates='entry', cascade='all, delete-orphan', passive_deletes=True)
     topics = relationship('Topic', secondary='entry_topics', back_populates='entries')
 
     def __repr__(self):
@@ -97,7 +98,7 @@ class File(Base):
     deleted_at = Column(DateTime, nullable=True)  # NULL = активен, иначе дата мягкого удаления
 
     # Отношения
-    file_links = relationship('FileLink', back_populates='file', cascade='all, delete-orphan')
+    file_links = relationship('FileLink', back_populates='file', cascade='all, delete-orphan', passive_deletes=True)
 
     @property
     def is_deleted(self):
