@@ -190,6 +190,7 @@ class Topic(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(200), nullable=False)
+    color_hex = Column(String(7), nullable=True) # "цвет" темы, формат '#RRGGBB', NULL = цвет по умолчанию
     section_id = Column(Integer, ForeignKey('sections.id', ondelete='CASCADE'), nullable=False)
     parent_topic_id = Column(Integer, ForeignKey('topics.id'), nullable=True)
     created_at = Column(DateTime, default=datetime.now)
