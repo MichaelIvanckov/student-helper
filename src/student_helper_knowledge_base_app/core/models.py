@@ -55,6 +55,7 @@ class Entry(Base):
             "(is_global = 1 OR lecture_date IS NOT NULL)",
             name="ck_entry_has_date_if_not_global"
         ),
+        Index('idx_entry_complete', 'is_complete'),   # новый индекс для фильтрации
     )
 
     id = Column(Integer, primary_key=True)
@@ -63,6 +64,7 @@ class Entry(Base):
     is_global = Column(Boolean, default=False)          # глобальная запись (учебник и т.п.)
     title = Column(String(300), nullable=True)          # может быть пустым – тогда показываем дату
     note = Column(Text, nullable=True)                  # текстовая заметка (индексируется)
+    is_complete = Column(Boolean, default=False, nullable=False)  # завершена ли запись
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
@@ -72,7 +74,7 @@ class Entry(Base):
     topics = relationship('Topic', secondary='entry_topics', back_populates='entries')
 
     def __repr__(self):
-        return f"<Entry(id={self.id}, title='{self.title}', date={self.lecture_date})>"
+        return f"<Entry(id={self.id}, title='{self.title}', date={self.lecture_date}, complete={self.is_complete})>"
 
 
 # ------------------------------------------------------------
