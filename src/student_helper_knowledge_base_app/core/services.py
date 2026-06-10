@@ -90,6 +90,7 @@ class DataService(QObject):
         }
         return mime_map.get(ext, 'application/octet-stream')
 
+
     # ======================================================================
     # Разделы
     # ======================================================================
@@ -139,6 +140,7 @@ class DataService(QObject):
     def get_section_by_id(self, section_id: int) -> Optional[Section]:
         with self._get_session() as session:
             return session.query(Section).get(section_id)
+
 
     # ======================================================================
     # Записи
@@ -212,6 +214,7 @@ class DataService(QObject):
                     .filter(Entry.note.contains(keyword))
                     .order_by(Entry.created_at.desc())
                     .all())
+
 
     # ======================================================================
     # Файлы и привязка (с полиморфными владельцами)
@@ -437,6 +440,7 @@ class DataService(QObject):
                 return None
             return (self._storage_dir.parent / file_obj.stored_path).resolve()
 
+
     # ======================================================================
     # Специализированный метод: добавление фото по метаданным
     # ======================================================================
@@ -508,6 +512,64 @@ class DataService(QObject):
             raise DataServiceError(f"Не удалось прикрепить фото: {e}")
 
         return entry
+
+    #---------------другой способ добавить фото по метаданным----------------
+    def ensure_entry_by_date(self, section_id: int, date: date) -> Entry:
+        """Находит запись в разделе по дате или создаёт новую."""
+        with self._get_session() as session:
+            entry = session.query(Entry).filter(
+                Entry.section_id == section_id,
+                Entry.lecture_date == date,
+                Entry.is_global == False
+            ).first()
+            if not entry:
+                entry = Entry(
+                    section_id=section_id,
+                    lecture_date=date,
+                    title=f"Лекция от {date.isoformat()}",
+                    note=""
+                )
+                session.add(entry)
+                self._safe_commit(session, "Не удалось создать запись для даты")
+                session.refresh(entry)
+                self.entry_added.emit(entry)
+            return entry
+
+    def add_photo_to_entry_by_file(self, photo_path: Union[str, Path], entry_id: int) -> File:
+        """Копирует фото в хранилище и прикрепляет к указанной записи (без EXIF-логики)."""
+        file_obj = self.add_file(photo_path)
+        self.attach_file_to_entry(entry_id, file_obj.id, link_type='photo')
+        return file_obj
+
+    def add_photos_batch(self, photo_paths: List[Union[str, Path]], section_id: int) -> Dict:
+        """
+        Обрабатывает список фото.
+        Возвращает словарь:
+        {
+            'added': [(entry_id, file_id, date), ...],
+            'failed': [(file_path, error_message), ...]
+        }
+        Для failed файлов дата не извлечена.
+        """
+        from collections import defaultdict
+        result = {'added': [], 'failed': []}
+
+        for path in photo_paths:
+            path = Path(path)
+            try:
+                photo_date = self.extract_photo_date(path)
+                if photo_date is None:
+                    raise DataServiceError("Не удалось извлечь дату из EXIF")
+                entry = self.ensure_entry_by_date(section_id, photo_date)
+                file_obj = self.add_photo_to_entry_by_file(path, entry.id)
+                # Помечаем как автоматическое добавление
+                file_obj.metadata_json = json.dumps({"auto_added": True})
+                self.update_file(file_obj.id, metadata_json=file_obj.metadata_json)
+                result['added'].append((entry.id, file_obj.id, photo_date))
+            except Exception as e:
+                result['failed'].append((str(path), str(e)))
+        return result
+
 
     # ======================================================================
     # Управление настройками внешних программ (для пункта 3)
