@@ -1,6 +1,6 @@
 import sys
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QHBoxLayout,
-                               QPushButton, QMenu, QLineEdit, QVBoxLayout)
+                               QPushButton, QMenu, QLineEdit, QVBoxLayout, QSizePolicy)
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction
 
@@ -20,21 +20,24 @@ class MainWindow(QMainWindow):
         file_menu.addAction("Открыть")
         file_menu.addAction("Выход", self.close)
         btn_file.setMenu(file_menu)
+        btn_file.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         layout.addWidget(btn_file)
 
         btn_edit = QPushButton("Правка")
         edit_menu = QMenu()
         edit_menu.addAction("Копировать")
         btn_edit.setMenu(edit_menu)
+        btn_edit.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         layout.addWidget(btn_edit)
 
         # --- Добавляем разделитель-растяжку, чтобы отодвинуть другие элементы вправо ---
-        layout.addStretch()
+        #layout.addStretch(50)
 
         # --- Добавляем строку поиска ---
         search_edit = QLineEdit()
         search_edit.setPlaceholderText("Поиск...")
         search_edit.setFixedWidth(150)
+        search_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         layout.addWidget(search_edit)
 
         # Устанавливаем наш кастомный виджет в качестве новой строки меню

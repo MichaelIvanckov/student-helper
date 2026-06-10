@@ -38,6 +38,7 @@ class Section(Base):
     # Отношения
     parent = relationship('Section', remote_side=[id], backref='children')
     entries = relationship('Entry', back_populates='section', cascade='all, delete-orphan')
+    topics = relationship('Topic', back_populates='section', cascade='all, delete-orphan')
 
     def __repr__(self):
         return f"<Section(id={self.id}, name='{self.name}')>"
@@ -68,6 +69,7 @@ class Entry(Base):
     # Отношения
     section = relationship('Section', back_populates='entries')
     file_links = relationship('FileLink', back_populates='entry', cascade='all, delete-orphan')
+    topics = relationship('Topic', secondary='entry_topics', back_populates='entries')
 
     def __repr__(self):
         return f"<Entry(id={self.id}, title='{self.title}', date={self.lecture_date})>"
@@ -170,6 +172,54 @@ Index('uq_filelink_owner_order',
       FileLink.owner_type, FileLink.owner_id, FileLink.order_in_owner,
       unique=True,
       sqlite_where=(FileLink.owner_type.isnot(None) & FileLink.owner_id.isnot(None)))
+
+
+# ------------------------------------------------------------
+# Модель "Тема" (учебная тема внутри раздела)
+# ------------------------------------------------------------
+class Topic(Base):
+    __tablename__ = 'topics'
+    __table_args__ = (
+        UniqueConstraint('section_id', 'name', name='uq_topic_section_name'),
+        Index('idx_topics_section', 'section_id'),
+        Index('idx_topics_parent', 'parent_topic_id'),
+    )
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(200), nullable=False)
+    section_id = Column(Integer, ForeignKey('sections.id', ondelete='CASCADE'), nullable=False)
+    parent_topic_id = Column(Integer, ForeignKey('topics.id'), nullable=True)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    # Отношения
+    section = relationship('Section', back_populates='topics')
+    parent = relationship('Topic', remote_side=[id], backref='children')
+    entries = relationship('Entry', secondary='entry_topics', back_populates='topics')
+
+    def __repr__(self):
+        return f"<Topic(id={self.id}, name='{self.name}', section_id={self.section_id})>"
+
+
+# ------------------------------------------------------------
+# Ассоциативная таблица для связи Entry <-> Topic
+# ------------------------------------------------------------
+class EntryTopic(Base):
+    __tablename__ = 'entry_topics'
+    __table_args__ = (
+        UniqueConstraint('entry_id', 'topic_id', name='uq_entry_topic'),
+        Index('idx_entry_topics_entry', 'entry_id'),
+        Index('idx_entry_topics_topic', 'topic_id'),
+    )
+
+    id = Column(Integer, primary_key=True)
+    entry_id = Column(Integer, ForeignKey('entries.id', ondelete='CASCADE'), nullable=False)
+    topic_id = Column(Integer, ForeignKey('topics.id', ondelete='CASCADE'), nullable=False)
+    created_at = Column(DateTime, default=datetime.now)
+
+    # Отношения (опционально, для удобства)
+    entry = relationship('Entry', backref='topic_links')
+    topic = relationship('Topic', backref='entry_links')
 
 
 # ------------------------------------------------------------
