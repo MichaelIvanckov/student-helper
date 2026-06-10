@@ -1,284 +1,304 @@
+# main_window.py
 import sys
+import json
 from pathlib import Path
-from datetime import date
+from datetime import date, datetime
+from typing import Optional, List, Dict, Any
 
+from PySide6.QtCore import Qt, QDate, QPoint
+from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QSplitter,
-    QTreeWidget, QTreeWidgetItem, QPushButton, QLabel, QTextEdit,
-    QListWidget, QListWidgetItem, QMessageBox, QFileDialog, QLineEdit,
-    QGroupBox, QFormLayout, QDateEdit, QCheckBox, QDialog, QDialogButtonBox
+    QMainWindow, QTreeWidgetItem, QMessageBox, QInputDialog, QFileDialog,
+    QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
+    QTextEdit, QListWidget, QListWidgetItem, QPushButton, QDateEdit,
+    QCheckBox, QDialog, QDialogButtonBox, QMenu, QSplitter, QApplication
 )
-from PySide6.QtCore import Qt, QDate
-# from PySide6.QGuiApplication import QDesktopServices
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtCore import Signal
 
-from src.student_helper_knowledge_base_app.core.services import DataService, DataServiceError
+from ..core.services import DataService, DataServiceError
+from ..ui_and_qrc_files.v3.ui_main_window_ui import Ui_MainWindow  # сгенерированный из .ui
 
 
-class CreateEntryDialog(QDialog):
-    """Диалог создания новой записи."""
-    def __init__(self, section_id, parent=None):
+# ----------------------------------------------------------------------
+# Виджет редактора записи (вкладка)
+# ----------------------------------------------------------------------
+class EntryEditorWidget(QWidget):
+    """Вкладка для просмотра и редактирования одной записи."""
+    entry_updated = Signal(int)  # entry_id
+
+    def __init__(self, service: DataService, entry_id: int, parent=None):
         super().__init__(parent)
-        self.section_id = section_id
-        self.setWindowTitle("Новая запись")
-        layout = QFormLayout(self)
+        self.service = service
+        self.entry_id = entry_id
+        self.entry = self.service.get_entry_by_id(entry_id)
+        if not self.entry:
+            raise ValueError(f"Запись {entry_id} не найдена")
 
+        self.setup_ui()
+        self.load_data()
+
+    def setup_ui(self):
+        layout = QVBoxLayout(self)
+
+        # Заголовок и дата
+        form_layout = QHBoxLayout()
         self.title_edit = QLineEdit()
+        self.title_edit.setPlaceholderText("Название (опционально)")
         self.date_edit = QDateEdit()
-        self.date_edit.setDate(QDate.currentDate())
         self.date_edit.setCalendarPopup(True)
-        self.global_cb = QCheckBox("Глобальная (не привязана к дате)")
-        self.global_cb.toggled.connect(self.on_global_toggled)
+        self.global_check = QCheckBox("Глобальная запись (без даты)")
+        self.global_check.toggled.connect(lambda checked: self.date_edit.setEnabled(not checked))
+        self.complete_check = QCheckBox("Запись заполнена")
+        form_layout.addWidget(QLabel("Название:"))
+        form_layout.addWidget(self.title_edit)
+        form_layout.addWidget(QLabel("Дата:"))
+        form_layout.addWidget(self.date_edit)
+        form_layout.addWidget(self.global_check)
+        form_layout.addWidget(self.complete_check)
+        layout.addLayout(form_layout)
+
+        # Заметка
+        layout.addWidget(QLabel("Заметка:"))
         self.note_edit = QTextEdit()
-        self.note_edit.setMaximumHeight(100)
+        layout.addWidget(self.note_edit)
 
-        layout.addRow("Название (опционально):", self.title_edit)
-        layout.addRow("Дата лекции:", self.date_edit)
-        layout.addRow(self.global_cb)
-        layout.addRow("Текст заметки:", self.note_edit)
+        # Список файлов
+        layout.addWidget(QLabel("Прикреплённые файлы:"))
+        self.files_list = QListWidget()
+        self.files_list.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.files_list.customContextMenuRequested.connect(self.file_context_menu)
+        layout.addWidget(self.files_list)
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        layout.addRow(buttons)
+        # Кнопки управления файлами
+        btn_layout = QHBoxLayout()
+        self.add_file_btn = QPushButton("Добавить файл")
+        self.add_file_btn.clicked.connect(self.add_file)
+        self.add_existing_btn = QPushButton("Прикрепить существующий")
+        self.add_existing_btn.clicked.connect(self.attach_existing_file)
+        self.detach_file_btn = QPushButton("Удалить выбранный")
+        self.detach_file_btn.clicked.connect(self.detach_file)
+        btn_layout.addWidget(self.add_file_btn)
+        btn_layout.addWidget(self.add_existing_btn)
+        btn_layout.addWidget(self.detach_file_btn)
+        layout.addLayout(btn_layout)
 
-    def on_global_toggled(self, checked):
-        self.date_edit.setEnabled(not checked)
+        # Кнопка сохранения
+        self.save_btn = QPushButton("Сохранить изменения")
+        self.save_btn.clicked.connect(self.save)
+        layout.addWidget(self.save_btn)
 
-    def get_data(self):
-        lecture_date = None if self.global_cb.isChecked() else self.date_edit.date().toPython()
-        return {
-            "section_id": self.section_id,
-            "lecture_date": lecture_date,
-            "is_global": self.global_cb.isChecked(),
-            "title": self.title_edit.text() or None,
-            "note": self.note_edit.toPlainText() or None
-        }
+        # Установим минимальные размеры для планшета
+        for btn in [self.add_file_btn, self.add_existing_btn, self.detach_file_btn, self.save_btn]:
+            btn.setMinimumHeight(40)
 
+    def load_data(self):
+        self.title_edit.setText(self.entry.title or "")
+        if self.entry.is_global:
+            self.global_check.setChecked(True)
+        else:
+            self.global_check.setChecked(False)
+            if self.entry.lecture_date:
+                self.date_edit.setDate(QDate(self.entry.lecture_date.year,
+                                             self.entry.lecture_date.month,
+                                             self.entry.lecture_date.day))
+        self.complete_check.setChecked(self.entry.is_complete)
+        self.note_edit.setPlainText(self.entry.note or "")
+        self.load_files()
 
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("База знаний студента — тестовый прототип")
-        self.resize(1000, 700)
+    def load_files(self):
+        self.files_list.clear()
+        files = self.service.get_files_for_entry(self.entry_id)
+        for f in files:
+            item = QListWidgetItem(f"{f.original_name} [{f.mime_type}]")
+            item.setData(Qt.UserRole, f.id)
+            self.files_list.addItem(item)
 
-        # Инициализация сервиса
+    def add_file(self):
+        path, _ = QFileDialog.getOpenFileName(self, "Выберите файл")
+        if not path:
+            return
         try:
-            self.service = DataService()
-        except Exception as e:
-            QMessageBox.critical(self, "Ошибка", f"Не удалось инициализировать БД: {e}")
-            sys.exit(1)
+            file_obj = self.service.add_file(path)
+            self.service.attach_file_to_entry(self.entry_id, file_obj.id)
+            self.load_files()
+        except DataServiceError as e:
+            QMessageBox.critical(self, "Ошибка", str(e))
 
-        # Подключаем сигналы сервиса к слотам обновления GUI
+    def attach_existing_file(self):
+        # Упрощённо: показать диалог со всеми файлами (или только не привязанными)
+        files = self.service.get_all_files()
+        if not files:
+            QMessageBox.information(self, "Нет файлов", "Нет доступных файлов в хранилище.")
+            return
+        # простой диалог выбора из списка
+        dlg = QDialog(self)
+        dlg.setWindowTitle("Выберите файл")
+        layout = QVBoxLayout(dlg)
+        list_widget = QListWidget()
+        for f in files:
+            item = QListWidgetItem(f"{f.original_name} ({f.mime_type})")
+            item.setData(Qt.UserRole, f.id)
+            list_widget.addItem(item)
+        layout.addWidget(list_widget)
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.accepted.connect(dlg.accept)
+        buttons.rejected.connect(dlg.reject)
+        layout.addWidget(buttons)
+        if dlg.exec() == QDialog.Accepted:
+            selected = list_widget.currentItem()
+            if selected:
+                file_id = selected.data(Qt.UserRole)
+                try:
+                    self.service.attach_file_to_entry(self.entry_id, file_id)
+                    self.load_files()
+                except DataServiceError as e:
+                    QMessageBox.critical(self, "Ошибка", str(e))
+
+    def detach_file(self):
+        current = self.files_list.currentItem()
+        if not current:
+            return
+        file_id = current.data(Qt.UserRole)
+        reply = QMessageBox.question(self, "Отвязать файл",
+                                     "Отвязать файл от этой записи? (физически не удаляется)",
+                                     QMessageBox.Yes | QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            try:
+                self.service.detach_file(self.entry_id, file_id)
+                self.load_files()
+            except DataServiceError as e:
+                QMessageBox.critical(self, "Ошибка", str(e))
+
+    def save(self):
+        try:
+            is_global = self.global_check.isChecked()
+            lecture_date = None if is_global else self.date_edit.date().toPython()
+            self.service.update_entry(
+                self.entry_id,
+                title=self.title_edit.text() or None,
+                lecture_date=lecture_date,
+                is_global=is_global,
+                note=self.note_edit.toPlainText() or None,
+                is_complete=self.complete_check.isChecked()
+            )
+            QMessageBox.information(self, "Сохранено", "Изменения сохранены.")
+            self.entry_updated.emit(self.entry_id)
+        except DataServiceError as e:
+            QMessageBox.critical(self, "Ошибка", str(e))
+
+    def file_context_menu(self, pos: QPoint):
+        item = self.files_list.itemAt(pos)
+        if not item:
+            return
+        menu = QMenu()
+        open_action = menu.addAction("Открыть")
+        detach_action = menu.addAction("Отвязать")
+        action = menu.exec(self.files_list.mapToGlobal(pos))
+        file_id = item.data(Qt.UserRole)
+        if action == open_action:
+            path = self.service.get_file_path(file_id)
+            if path and path.exists():
+                from PySide6.QtGui import QDesktopServices
+                QDesktopServices.openUrl(path.as_uri())
+            else:
+                QMessageBox.warning(self, "Ошибка", "Файл не найден.")
+        elif action == detach_action:
+            try:
+                self.service.detach_file(self.entry_id, file_id)
+                self.load_files()
+            except DataServiceError as e:
+                QMessageBox.critical(self, "Ошибка", str(e))
+
+
+# ----------------------------------------------------------------------
+# Главное окно
+# ----------------------------------------------------------------------
+class MainWindow(QMainWindow, Ui_MainWindow):
+    def __init__(self, project_path: Optional[Path] = None):
+        super().__init__()
+        self.setupUi(self)
+        self.service = None
+        self.current_section_id = None
+
+        # Настройка элементов
+        self.main_tabs.setTabsClosable(True)
+        self.main_tabs.tabCloseRequested.connect(self.close_tab)
+        self.sections_tree.itemClicked.connect(self.on_tree_item_clicked)
+        self.sections_tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.sections_tree.customContextMenuRequested.connect(self.tree_context_menu)
+
+        # Кнопки действий
+        self.create_section_button.clicked.connect(self.add_section)
+        self.create_entry_button.clicked.connect(self.add_entry)
+        self.load_photo_by_exif_button.clicked.connect(self.add_photos_batch)
+        self.search_button.clicked.connect(self.search_notes)
+
+        # Календарь
+        self.calendar.clicked.connect(self.on_calendar_day_clicked)
+
+        # Инициализируем сервис и загружаем данные
+        self.init_service(project_path)
+
+    def init_service(self, project_path: Optional[Path] = None):
+        if project_path and project_path.exists():
+            # Загружаем проект (упрощённо: из JSON)
+            with open(project_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+            db_path = project_path.parent / config['database_path']
+            storage_path = project_path.parent / config['storage_path']
+            self.service = DataService(db_path=f"sqlite:///{db_path.as_posix()}", storage_dir=storage_path)
+            self.setWindowTitle(f"База знаний - {config['name']}")
+        else:
+            # Создаём новый проект или используем временный (для демо)
+            from PySide6.QtCore import QStandardPaths
+            default_dir = Path(QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)) / "KnowledgeBase"
+            default_dir.mkdir(parents=True, exist_ok=True)
+            db_path = default_dir / "demo.db"
+            storage_path = default_dir / "storage"
+            self.service = DataService(db_path=f"sqlite:///{db_path.as_posix()}", storage_dir=storage_path)
+
+        # Подключаем сигналы сервиса
         self.service.section_added.connect(self.on_section_added)
         self.service.section_deleted.connect(self.on_section_deleted)
         self.service.entry_added.connect(self.on_entry_added)
         self.service.entry_deleted.connect(self.on_entry_deleted)
         self.service.entry_updated.connect(self.on_entry_updated)
-        self.service.file_attached.connect(self.on_file_attached)
-        self.service.file_detached.connect(self.on_file_detached)
 
-        self.setup_ui()
-
-        # Загружаем начальные данные
         self.load_sections()
 
-    def setup_ui(self):
-        # Центральный виджет
-        central = QWidget()
-        self.setCentralWidget(central)
-        main_layout = QHBoxLayout(central)
-
-        # Левая панель: дерево разделов и записей
-        left_widget = QWidget()
-        left_layout = QVBoxLayout(left_widget)
-        left_layout.setContentsMargins(0, 0, 0, 0)
-
-        self.tree = QTreeWidget()
-        self.tree.setHeaderLabel("Разделы и записи")
-        self.tree.itemClicked.connect(self.on_tree_item_clicked)
-        left_layout.addWidget(self.tree)
-
-        # Кнопки управления разделами/записями
-        btn_layout = QHBoxLayout()
-        self.btn_add_section = QPushButton("+ Раздел")
-        self.btn_add_section.clicked.connect(self.add_section)
-        self.btn_add_entry = QPushButton("+ Запись")
-        self.btn_add_entry.clicked.connect(self.add_entry)
-        self.btn_delete = QPushButton("Удалить")
-        self.btn_delete.clicked.connect(self.delete_current_item)
-        btn_layout.addWidget(self.btn_add_section)
-        btn_layout.addWidget(self.btn_add_entry)
-        btn_layout.addWidget(self.btn_delete)
-        left_layout.addLayout(btn_layout)
-
-        # Правая панель: детали записи и файлы
-        right_widget = QWidget()
-        right_layout = QVBoxLayout(right_widget)
-
-        # Область информации о записи
-        self.entry_info = QGroupBox("Информация о записи")
-        info_layout = QVBoxLayout()
-        self.entry_title_label = QLabel("Название: —")
-        self.entry_date_label = QLabel("Дата: —")
-        self.entry_note_label = QLabel("Заметка: ")
-        self.entry_note_text = QTextEdit()
-        self.entry_note_text.setReadOnly(True)
-        self.entry_note_text.setMaximumHeight(80)
-        info_layout.addWidget(self.entry_title_label)
-        info_layout.addWidget(self.entry_date_label)
-        info_layout.addWidget(self.entry_note_label)
-        info_layout.addWidget(self.entry_note_text)
-        self.entry_info.setLayout(info_layout)
-        right_layout.addWidget(self.entry_info)
-
-        # Список файлов записи
-        self.files_list = QListWidget()
-        self.files_list.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.files_list.customContextMenuRequested.connect(self.file_context_menu)
-        right_layout.addWidget(QLabel("Прикреплённые файлы:"))
-        right_layout.addWidget(self.files_list)
-
-        # Кнопки действий с файлами
-        file_btn_layout = QHBoxLayout()
-        self.btn_add_file = QPushButton("Добавить файл")
-        self.btn_add_file.clicked.connect(self.add_file_to_entry)
-        self.btn_add_photo = QPushButton("Добавить фото (по дате)")
-        self.btn_add_photo.clicked.connect(self.add_photo_by_metadata)
-        file_btn_layout.addWidget(self.btn_add_file)
-        file_btn_layout.addWidget(self.btn_add_photo)
-        right_layout.addLayout(file_btn_layout)
-
-        # Поиск
-        search_layout = QHBoxLayout()
-        self.search_edit = QLineEdit()
-        self.search_edit.setPlaceholderText("Поиск по заметкам...")
-        self.btn_search = QPushButton("Найти")
-        self.btn_search.clicked.connect(self.search_notes)
-        search_layout.addWidget(self.search_edit)
-        search_layout.addWidget(self.btn_search)
-        right_layout.addLayout(search_layout)
-
-        # Размещаем левую и правую панели через сплиттер
-        splitter = QSplitter(Qt.Horizontal)
-        splitter.addWidget(left_widget)
-        splitter.addWidget(right_widget)
-        splitter.setSizes([300, 700])
-        main_layout.addWidget(splitter)
-
-        # Переменные для хранения текущего выбранного элемента
-        self.current_section_id = None
-        self.current_entry_id = None
-
-    # ----------------------------------------------------------------------
-    # Загрузка данных
-    # ----------------------------------------------------------------------
     def load_sections(self):
-        self.tree.clear()
+        self.sections_tree.clear()
         root_sections = self.service.get_sections(parent_id=None)
         for sect in root_sections:
-            self.add_section_to_tree(sect)
+            self.add_section_item(sect)
 
-    def add_section_to_tree(self, section, parent_item=None):
-        item = QTreeWidgetItem(parent_item if parent_item else self.tree)
+    def add_section_item(self, section, parent_item=None):
+        item = QTreeWidgetItem(parent_item if parent_item else self.sections_tree)
         item.setText(0, section.name)
         item.setData(0, Qt.UserRole, ("section", section.id))
-        # Загружаем записи этого раздела
+        # Записи
         entries = self.service.get_entries_by_section(section.id)
         for entry in entries:
-            self.add_entry_to_tree(entry, item)
-        # Загружаем дочерние разделы
+            self.add_entry_item(entry, item)
+        # Дочерние разделы
         children = self.service.get_sections(parent_id=section.id)
         for child in children:
-            self.add_section_to_tree(child, item)
+            self.add_section_item(child, item)
         if parent_item is None:
-            self.tree.addTopLevelItem(item)
+            self.sections_tree.addTopLevelItem(item)
         else:
             parent_item.addChild(item)
         item.setExpanded(True)
 
-    def add_entry_to_tree(self, entry, parent_item):
+    def add_entry_item(self, entry, parent_item):
         item = QTreeWidgetItem(parent_item)
         display = entry.title if entry.title else (entry.lecture_date.isoformat() if entry.lecture_date else "Без даты")
         item.setText(0, display)
         item.setData(0, Qt.UserRole, ("entry", entry.id))
+        if entry.is_complete:
+            item.setForeground(0, Qt.darkGreen)
+        return item
 
-    # ----------------------------------------------------------------------
-    # Обработчики сигналов сервиса
-    # ----------------------------------------------------------------------
-    def on_section_added(self, section):
-        # Добавляем в дерево (упрощённо – перезагружаем всё)
-        self.load_sections()
-
-    def on_section_deleted(self, section_id):
-        self.load_sections()
-        if self.current_section_id == section_id:
-            self.clear_entry_display()
-
-    def on_entry_added(self, entry):
-        self.load_sections()
-        # Если это текущий раздел, можно выделить новую запись
-        if self.current_section_id == entry.section_id:
-            # Не будем усложнять – просто перезагрузили
-            pass
-
-    def on_entry_deleted(self, entry_id):
-        if self.current_entry_id == entry_id:
-            self.clear_entry_display()
-        self.load_sections()
-
-    def on_entry_updated(self, entry):
-        if self.current_entry_id == entry.id:
-            self.display_entry(entry)
-        self.load_sections()  # обновить название в дереве
-
-    def on_file_attached(self, entry_id, file_id):
-        if self.current_entry_id == entry_id:
-            self.load_files_for_current_entry()
-
-    def on_file_detached(self, entry_id, file_id):
-        if self.current_entry_id == entry_id:
-            self.load_files_for_current_entry()
-
-    # ----------------------------------------------------------------------
-    # Отображение деталей записи
-    # ----------------------------------------------------------------------
-    def clear_entry_display(self):
-        self.current_entry_id = None
-        self.entry_title_label.setText("Название: —")
-        self.entry_date_label.setText("Дата: —")
-        self.entry_note_text.clear()
-        self.files_list.clear()
-        self.btn_add_file.setEnabled(False)
-        self.btn_add_photo.setEnabled(False)
-
-    def display_entry(self, entry):
-        self.current_entry_id = entry.id
-        title = entry.title if entry.title else "(без названия)"
-        self.entry_title_label.setText(f"Название: {title}")
-        if entry.is_global:
-            date_str = "Глобальная запись"
-        else:
-            date_str = entry.lecture_date.isoformat() if entry.lecture_date else "Дата не указана"
-        self.entry_date_label.setText(f"Дата: {date_str}")
-        self.entry_note_text.setPlainText(entry.note if entry.note else "")
-        self.load_files_for_current_entry()
-        self.btn_add_file.setEnabled(True)
-        self.btn_add_photo.setEnabled(True)
-
-    def load_files_for_current_entry(self):
-        self.files_list.clear()
-        if not self.current_entry_id:
-            return
-        files = self.service.get_files_for_entry(self.current_entry_id)
-        for file_obj in files:
-            item = QListWidgetItem(f"{file_obj.original_name} [{file_obj.mime_type}]")
-            item.setData(Qt.UserRole, file_obj.id)
-            self.files_list.addItem(item)
-
-    # ----------------------------------------------------------------------
-    # Обработка кликов в дереве
-    # ----------------------------------------------------------------------
     def on_tree_item_clicked(self, item, column):
         data = item.data(0, Qt.UserRole)
         if not data:
@@ -286,187 +306,265 @@ class MainWindow(QMainWindow):
         kind, obj_id = data
         if kind == "section":
             self.current_section_id = obj_id
-            self.current_entry_id = None
-            self.clear_entry_display()
+            # Обновляем календарь для этого раздела
+            self.highlight_calendar_dates(obj_id)
         elif kind == "entry":
-            entry = self.service.get_entry_by_id(obj_id)
-            if entry:
-                self.current_section_id = entry.section_id
-                self.display_entry(entry)
-            else:
-                self.clear_entry_display()
+            self.open_entry_in_tab(obj_id)
 
-    # ----------------------------------------------------------------------
-    # Действия: разделы, записи, удаление
-    # ----------------------------------------------------------------------
+    def open_entry_in_tab(self, entry_id):
+        # Проверяем, не открыта ли уже вкладка с этой записью
+        for i in range(self.main_tabs.count()):
+            widget = self.main_tabs.widget(i)
+            if isinstance(widget, EntryEditorWidget) and widget.entry_id == entry_id:
+                self.main_tabs.setCurrentIndex(i)
+                return
+        # Создаём новую вкладку
+        editor = EntryEditorWidget(self.service, entry_id)
+        editor.entry_updated.connect(lambda eid: self.on_entry_updated(eid))
+        # Заголовок вкладки – название записи или дата
+        entry = self.service.get_entry_by_id(entry_id)
+        tab_title = entry.title if entry.title else (entry.lecture_date.isoformat() if entry.lecture_date else "Без названия")
+        self.main_tabs.addTab(editor, tab_title)
+        self.main_tabs.setCurrentWidget(editor)
+
+    def close_tab(self, index):
+        widget = self.main_tabs.widget(index)
+        if isinstance(widget, EntryEditorWidget):
+            # Можно спросить о сохранении, но у нас есть кнопка Сохранить
+            pass
+        self.main_tabs.removeTab(index)
+        widget.deleteLater()
+
+    def highlight_calendar_dates(self, section_id):
+        # Получаем даты записей в разделе
+        entries = self.service.get_entries_by_section(section_id)
+        dates = [e.lecture_date for e in entries if e.lecture_date and not e.is_global]
+        # Сброс форматирования
+        fmt = self.calendar.dateTextFormat()
+        for qdate in fmt.keys():
+            self.calendar.setDateTextFormat(qdate, fmt[qdate])  # сброс? проще пересоздать
+        self.calendar.setDateTextFormat(QDate(), QTextCharFormat())  # очистка
+        # Подсветка
+        for d in dates:
+            qd = QDate(d.year, d.month, d.day)
+            format = self.calendar.dateTextFormat(qd)
+            format.setBackground(Qt.yellow)
+            self.calendar.setDateTextFormat(qd, format)
+
+    def on_calendar_day_clicked(self, qdate: QDate):
+        if not self.current_section_id:
+            QMessageBox.warning(self, "Нет раздела", "Выберите раздел в дереве.")
+            return
+        selected_date = qdate.toPython()
+        entries = self.service.get_entries_by_section(self.current_section_id)
+        day_entries = [e for e in entries if e.lecture_date == selected_date and not e.is_global]
+        if not day_entries:
+            # Создать запись за этот день?
+            reply = QMessageBox.question(self, "Нет записи", "Создать запись за этот день?",
+                                         QMessageBox.Yes | QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                entry = self.service.create_entry(
+                    section_id=self.current_section_id,
+                    lecture_date=selected_date,
+                    is_global=False,
+                    title=None,
+                    note=""
+                )
+                self.open_entry_in_tab(entry.id)
+        else:
+            # Открыть первую запись (можно показывать список)
+            self.open_entry_in_tab(day_entries[0].id)
+
+    # ---------- Обработчики сигналов сервиса ----------
+    def on_section_added(self, section):
+        self.load_sections()
+
+    def on_section_deleted(self, section_id):
+        self.load_sections()
+        if self.current_section_id == section_id:
+            self.current_section_id = None
+
+    def on_entry_added(self, entry):
+        self.load_sections()
+        # Если это текущий раздел, можно переоткрыть, но дерево обновится
+
+    def on_entry_deleted(self, entry_id):
+        self.load_sections()
+        # Закрыть вкладку, если открыта
+        for i in range(self.main_tabs.count()):
+            widget = self.main_tabs.widget(i)
+            if isinstance(widget, EntryEditorWidget) and widget.entry_id == entry_id:
+                self.main_tabs.removeTab(i)
+                break
+
+    def on_entry_updated(self, entry_id):
+        self.load_sections()
+        # Обновить заголовок вкладки, если открыта
+        entry = self.service.get_entry_by_id(entry_id)
+        if entry:
+            tab_title = entry.title if entry.title else (entry.lecture_date.isoformat() if entry.lecture_date else "Без названия")
+            for i in range(self.main_tabs.count()):
+                widget = self.main_tabs.widget(i)
+                if isinstance(widget, EntryEditorWidget) and widget.entry_id == entry_id:
+                    self.main_tabs.setTabText(i, tab_title)
+                    break
+
+    # ---------- Действия с деревом ----------
     def add_section(self):
-        from PySide6.QtWidgets import QInputDialog
-        name, ok = QInputDialog.getText(self, "Новый раздел", "Название раздела:")
+        name, ok = QInputDialog.getText(self, "Новый раздел", "Название:")
         if ok and name.strip():
             try:
-                self.service.create_section(name.strip())
+                parent_id = self.current_section_id if self.current_section_id else None
+                self.service.create_section(name.strip(), parent_id)
             except DataServiceError as e:
                 QMessageBox.critical(self, "Ошибка", str(e))
 
     def add_entry(self):
-        if self.current_section_id is None:
-            QMessageBox.warning(self, "Предупреждение", "Сначала выберите раздел в дереве.")
-            return
-        dialog = CreateEntryDialog(self.current_section_id, self)
-        if dialog.exec():
-            data = dialog.get_data()
-            try:
-                self.service.create_entry(**data)
-            except DataServiceError as e:
-                QMessageBox.critical(self, "Ошибка", str(e))
-
-    def delete_current_item(self):
-        current = self.tree.currentItem()
-        if not current:
-            return
-        data = current.data(0, Qt.UserRole)
-        if not data:
-            return
-        kind, obj_id = data
-        if kind == "section":
-            reply = QMessageBox.question(self, "Удаление", "Удалить раздел и все его записи?",
-                                         QMessageBox.Yes | QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                try:
-                    self.service.delete_section(obj_id)
-                except DataServiceError as e:
-                    QMessageBox.critical(self, "Ошибка", str(e))
-        elif kind == "entry":
-            reply = QMessageBox.question(self, "Удаление", "Удалить запись?",
-                                         QMessageBox.Yes | QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                try:
-                    self.service.delete_entry(obj_id)
-                except DataServiceError as e:
-                    QMessageBox.critical(self, "Ошибка", str(e))
-
-    # ----------------------------------------------------------------------
-    # Работа с файлами
-    # ----------------------------------------------------------------------
-    def add_file_to_entry(self):
-        if not self.current_entry_id:
-            QMessageBox.warning(self, "Предупреждение", "Сначала выберите запись.")
-            return
-        file_path, _ = QFileDialog.getOpenFileName(self, "Выберите файл")
-        if not file_path:
-            return
-        try:
-            # Сначала добавляем файл в хранилище
-            file_obj = self.service.add_file(file_path)
-            # Привязываем к текущей записи
-            self.service.attach_file_to_entry(self.current_entry_id, file_obj.id)
-            QMessageBox.information(self, "Готово", "Файл прикреплён.")
-        except DataServiceError as e:
-            QMessageBox.critical(self, "Ошибка", str(e))
-
-    def add_photo_by_metadata(self):
         if not self.current_section_id:
-            QMessageBox.warning(self, "Предупреждение", "Сначала выберите раздел в дереве.")
+            QMessageBox.warning(self, "Нет раздела", "Сначала выберите раздел в дереве.")
             return
-        file_path, _ = QFileDialog.getOpenFileName(self, "Выберите фото", "", "Images (*.jpg *.jpeg *.png *.tiff)")
-        if not file_path:
-            return
-        try:
-            entry = self.service.add_photo_by_metadata(self.current_section_id, file_path)
-            QMessageBox.information(self, "Готово", f"Фото добавлено в запись от {entry.lecture_date}")
-            # После создания новой записи дерево перезагрузится через сигнал
-        except DataServiceError as e:
-            QMessageBox.critical(self, "Ошибка", str(e))
+        # Простой диалог для MVP
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Новая запись")
+        layout = QVBoxLayout(dialog)
+        title_edit = QLineEdit()
+        title_edit.setPlaceholderText("Название (опционально)")
+        date_edit = QDateEdit()
+        date_edit.setDate(QDate.currentDate())
+        global_cb = QCheckBox("Глобальная запись (без даты)")
+        note_edit = QTextEdit()
+        note_edit.setPlaceholderText("Текст заметки")
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        layout.addWidget(QLabel("Название:"))
+        layout.addWidget(title_edit)
+        layout.addWidget(QLabel("Дата:"))
+        layout.addWidget(date_edit)
+        layout.addWidget(global_cb)
+        layout.addWidget(QLabel("Заметка:"))
+        layout.addWidget(note_edit)
+        layout.addWidget(buttons)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
 
-    def file_context_menu(self, pos):
-        item = self.files_list.itemAt(pos)
-        if not item:
-            return
-        file_id = item.data(Qt.UserRole)
-        menu = self.files_list.createStandardContextMenu()
-        open_action = menu.addAction("Открыть файл")
-        detach_action = menu.addAction("Отвязать от записи")
-        action = menu.exec(self.files_list.mapToGlobal(pos))
-        if action == open_action:
-            self.open_file(file_id)
-        elif action == detach_action:
-            self.detach_file(file_id)
+        def toggle_date(checked):
+            date_edit.setEnabled(not checked)
+        global_cb.toggled.connect(toggle_date)
 
-    def open_file(self, file_id):
-        path = self.service.get_file_path(file_id)
-        if path and path.exists():
-            QDesktopServices.openUrl(path.as_uri())
-        else:
-            QMessageBox.warning(self, "Ошибка", "Файл не найден на диске.")
-
-    def detach_file(self, file_id):
-        if not self.current_entry_id:
-            return
-        reply = QMessageBox.question(self, "Отвязка", "Отвязать файл от этой записи? (физически не удаляется)",
-                                     QMessageBox.Yes | QMessageBox.No)
-        if reply == QMessageBox.Yes:
+        if dialog.exec() == QDialog.Accepted:
+            lecture_date = None if global_cb.isChecked() else date_edit.date().toPython()
             try:
-                self.service.detach_file(self.current_entry_id, file_id)
+                self.service.create_entry(
+                    section_id=self.current_section_id,
+                    lecture_date=lecture_date,
+                    is_global=global_cb.isChecked(),
+                    title=title_edit.text() or None,
+                    note=note_edit.toPlainText() or None
+                )
             except DataServiceError as e:
                 QMessageBox.critical(self, "Ошибка", str(e))
 
-    # ----------------------------------------------------------------------
-    # Поиск
-    # ----------------------------------------------------------------------
+    def add_photos_batch(self):
+        if not self.current_section_id:
+            QMessageBox.warning(self, "Нет раздела", "Сначала выберите раздел.")
+            return
+        paths, _ = QFileDialog.getOpenFileNames(self, "Выберите фото", "", "Images (*.jpg *.jpeg *.png)")
+        if not paths:
+            return
+        # Вызов пакетного метода сервиса
+        try:
+            result = self.service.add_photos_batch(paths, self.current_section_id)
+            # Обработка успешных
+            for entry_id, file_id, photo_date in result['added']:
+                QMessageBox.information(self, "Успех", f"Фото от {photo_date} добавлено в запись {entry_id}")
+            # Обработка неудачных
+            if result['failed']:
+                self.handle_failed_photos(result['failed'], self.current_section_id)
+        except DataServiceError as e:
+            QMessageBox.critical(self, "Ошибка", str(e))
+
+    def handle_failed_photos(self, failed_list, section_id):
+        for file_path, error in failed_list:
+            dlg = QDialog(self)
+            dlg.setWindowTitle("Неизвестная дата фото")
+            layout = QVBoxLayout(dlg)
+            layout.addWidget(QLabel(f"Файл: {Path(file_path).name}\n{error}"))
+            date_edit = QDateEdit()
+            date_edit.setDate(QDate.currentDate())
+            layout.addWidget(QLabel("Выберите дату лекции:"))
+            layout.addWidget(date_edit)
+            buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+            buttons.accepted.connect(dlg.accept)
+            buttons.rejected.connect(dlg.reject)
+            layout.addWidget(buttons)
+            if dlg.exec() == QDialog.Accepted:
+                chosen_date = date_edit.date().toPython()
+                try:
+                    entry = self.service.ensure_entry_by_date(section_id, chosen_date)
+                    self.service.add_photo_to_entry_by_file(file_path, entry.id)
+                    QMessageBox.information(self, "Готово", f"Фото добавлено в запись от {chosen_date}")
+                except DataServiceError as e:
+                    QMessageBox.critical(self, "Ошибка", str(e))
+
     def search_notes(self):
-        keyword = self.search_edit.text().strip()
+        keyword = self.search_line_edit.text().strip()
         if not keyword:
             return
         results = self.service.search_notes(keyword)
-        if not results:
-            QMessageBox.information(self, "Поиск", "Ничего не найдено.")
-            return
-        # Покажем в отдельном диалоге
-        from PySide6.QtWidgets import QDialog, QListWidget, QVBoxLayout
-        dlg = QDialog(self)
-        dlg.setWindowTitle("Результаты поиска")
-        layout = QVBoxLayout(dlg)
+        # Создаём вкладку с результатами
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
         list_widget = QListWidget()
         for entry in results:
             display = entry.title if entry.title else (entry.lecture_date.isoformat() if entry.lecture_date else "Без даты")
             item = QListWidgetItem(f"{display} (раздел {entry.section_id})")
             item.setData(Qt.UserRole, entry.id)
             list_widget.addItem(item)
-        list_widget.itemDoubleClicked.connect(lambda it: self.jump_to_entry(it.data(Qt.UserRole), dlg))
+        list_widget.itemDoubleClicked.connect(lambda item: self.open_entry_in_tab(item.data(Qt.UserRole)))
         layout.addWidget(list_widget)
-        btn = QPushButton("Закрыть")
-        btn.clicked.connect(dlg.accept)
-        layout.addWidget(btn)
-        dlg.resize(400, 300)
-        dlg.exec()
+        self.main_tabs.addTab(tab, f"Поиск: {keyword}")
+        self.main_tabs.setCurrentWidget(tab)
 
-    def jump_to_entry(self, entry_id, dialog):
-        # Найти запись в дереве и выделить её
-        # Упрощённо: перезагрузим дерево и найдём элемент
-        # В реальном приложении нужен поиск по дереву. Здесь сделаем простой способ:
-        self.load_sections()
-        # Поиск в дереве (рекурсивно)
-        def find_item(parent_item):
-            for i in range(parent_item.childCount()):
-                child = parent_item.child(i)
-                data = child.data(0, Qt.UserRole)
-                if data and data[0] == "entry" and data[1] == entry_id:
-                    return child
-                found = find_item(child)
-                if found:
-                    return found
-            return None
-        for i in range(self.tree.topLevelItemCount()):
-            top = self.tree.topLevelItem(i)
-            if top.data(0, Qt.UserRole) and top.data(0, Qt.UserRole)[0] == "entry" and top.data(0, Qt.UserRole)[1] == entry_id:
-                self.tree.setCurrentItem(top)
-                self.on_tree_item_clicked(top, 0)
-                dialog.accept()
-                return
-            found = find_item(top)
-            if found:
-                self.tree.setCurrentItem(found)
-                self.on_tree_item_clicked(found, 0)
-                dialog.accept()
-                return
-        QMessageBox.warning(self, "Не найдено", "Запись не отображается в текущем дереве.")
+    def tree_context_menu(self, pos: QPoint):
+        item = self.sections_tree.itemAt(pos)
+        if not item:
+            return
+        data = item.data(0, Qt.UserRole)
+        if not data:
+            return
+        kind, obj_id = data
+        menu = QMenu()
+        if kind == "section":
+            add_entry_act = menu.addAction("Создать запись")
+            add_section_act = menu.addAction("Создать подраздел")
+            rename_act = menu.addAction("Переименовать")
+            delete_act = menu.addAction("Удалить раздел")
+            action = menu.exec(self.sections_tree.mapToGlobal(pos))
+            if action == add_entry_act:
+                self.current_section_id = obj_id
+                self.add_entry()
+            elif action == add_section_act:
+                name, ok = QInputDialog.getText(self, "Новый подраздел", "Название:")
+                if ok and name.strip():
+                    self.service.create_section(name.strip(), obj_id)
+            elif action == rename_act:
+                new_name, ok = QInputDialog.getText(self, "Переименовать", "Новое название:", text=item.text(0))
+                if ok and new_name.strip():
+                    self.service.update_section(obj_id, name=new_name.strip())
+            elif action == delete_act:
+                reply = QMessageBox.question(self, "Удаление", "Удалить раздел и все его записи?",
+                                             QMessageBox.Yes | QMessageBox.No)
+                if reply == QMessageBox.Yes:
+                    self.service.delete_section(obj_id)
+        elif kind == "entry":
+            rename_act = menu.addAction("Переименовать")
+            delete_act = menu.addAction("Удалить запись")
+            action = menu.exec(self.sections_tree.mapToGlobal(pos))
+            if action == rename_act:
+                new_title, ok = QInputDialog.getText(self, "Переименовать запись", "Новое название:", text=item.text(0))
+                if ok:
+                    self.service.update_entry(obj_id, title=new_title.strip() or None)
+            elif action == delete_act:
+                reply = QMessageBox.question(self, "Удаление", "Удалить запись?",
+                                             QMessageBox.Yes | QMessageBox.No)
+                if reply == QMessageBox.Yes:
+                    self.service.delete_entry(obj_id)
