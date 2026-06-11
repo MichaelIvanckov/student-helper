@@ -182,6 +182,27 @@ class DataService(QObject):
             self.entry_updated.emit(entry)
             return entry
 
+    def ensure_entry_by_date(self, section_id: int, date: date, title=None, note=None) -> Entry:
+        """Находит запись в разделе по дате или создаёт новую."""
+        with self._get_session() as session:
+            entry = session.query(Entry).filter(
+                Entry.section_id == section_id,
+                Entry.lecture_date == date,
+                Entry.is_global == False
+            ).first()
+            if not entry:
+                entry = Entry(
+                    section_id=section_id,
+                    lecture_date=date,
+                    title=title,
+                    note=(note or "Автоматически созданная запись")
+                )
+                session.add(entry)
+                self._safe_commit(session, f"Не удалось создать запись для даты {date}")
+                session.refresh(entry)
+                self.entry_added.emit(entry)
+            return entry
+
     def delete_entry(self, entry_id: int) -> bool:
         with self._get_session() as session:
             entry = session.query(Entry).get(entry_id)
@@ -500,9 +521,6 @@ class DataService(QObject):
                 self._safe_commit(session, "Не удалось создать запись для фото")
                 session.refresh(entry)
                 self.entry_added.emit(entry)
-            else:
-                # Обновим? Не нужно.
-                pass
 
         # Теперь добавляем файл и привязываем
         try:
@@ -518,28 +536,6 @@ class DataService(QObject):
             raise DataServiceError(f"Не удалось прикрепить фото: {e}")
 
         return entry
-
-    #---------------другой способ добавить фото по метаданным----------------
-    def ensure_entry_by_date(self, section_id: int, date: date, title=None, note=None) -> Entry:
-        """Находит запись в разделе по дате или создаёт новую."""
-        with self._get_session() as session:
-            entry = session.query(Entry).filter(
-                Entry.section_id == section_id,
-                Entry.lecture_date == date,
-                Entry.is_global == False
-            ).first()
-            if not entry:
-                entry = Entry(
-                    section_id=section_id,
-                    lecture_date=date,
-                    title=title,
-                    note=(note or "Автоматически созданная запись")
-                )
-                session.add(entry)
-                self._safe_commit(session, f"Не удалось создать запись для даты {date}")
-                session.refresh(entry)
-                self.entry_added.emit(entry)
-            return entry
 
     def add_photo_to_entry_by_file(self, photo_path: Union[str, Path], entry_id: int) -> File:
         """Копирует фото в хранилище и прикрепляет к указанной записи (без EXIF-логики)."""
