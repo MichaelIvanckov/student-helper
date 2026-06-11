@@ -57,6 +57,9 @@ class DataService(QObject):
         self._storage_dir = storage_dir.resolve()
         self._storage_dir.mkdir(parents=True, exist_ok=True)
 
+        # Настройки ассоциирования приложений
+        self.__init_app_settings("data/app_settings.json")
+
     # ======================================================================
     # Вспомогательные методы
     # ======================================================================
@@ -550,8 +553,8 @@ class DataService(QObject):
     # ======================================================================
     # Здесь просто хранилище в отдельной таблице или в QSettings.
     # Реализуем просто через словарь в памяти с сохранением в JSON-файл.
-    def __init_app_settings(self):
-        self._app_settings_path = Path("data/app_settings.json")
+    def __init_app_settings(self, path: Union[str, Path]):
+        self._app_settings_path = Path(path)
         self._app_settings = {}
         if self._app_settings_path.exists():
             try:
