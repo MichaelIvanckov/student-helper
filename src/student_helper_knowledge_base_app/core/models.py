@@ -229,9 +229,9 @@ class EntryTopic(Base):
 # ------------------------------------------------------------
 # Инициализация БД
 # ------------------------------------------------------------
-def init_db(db_path='sqlite:///data/app_data.db', echo=False):
+def init_db(db_path: str, echo=False, expire_on_commit=False):
     """Создаёт все таблицы и возвращает engine и sessionmaker"""
-    engine = create_engine(db_path, echo=echo)
+    engine = create_engine(db_path, echo=echo, future=True)
     Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
+    Session = sessionmaker(bind=engine, expire_on_commit=expire_on_commit)
     return engine, Session

@@ -14,8 +14,7 @@ from PySide6.QtCore import QObject, Signal
 from sqlalchemy import create_engine, func, or_
 from sqlalchemy.orm import sessionmaker, joinedload
 
-from src.student_helper_knowledge_base_app.core.models import Base, Section, Entry, File, FileLink
-from src.student_helper_knowledge_base_app.core.models import init_db as _init_db  # переименуем, чтобы не конфликтовать
+from src.student_helper_knowledge_base_app.core.models import init_db, Section, Entry, File, FileLink
 
 
 class DataServiceError(Exception):
@@ -50,9 +49,7 @@ class DataService(QObject):
                  storage_dir: Optional[Path] = None,
                  parent: Optional[QObject] = None):
         super().__init__(parent)
-        self._engine = create_engine(db_path, echo=False, future=True)
-        Base.metadata.create_all(self._engine)
-        self._Session = sessionmaker(bind=self._engine, expire_on_commit=False)
+        self._engine, self._Session = init_db(db_path, echo=False, expire_on_commit=False)
 
         # Хранилище файлов
         if storage_dir is None:
