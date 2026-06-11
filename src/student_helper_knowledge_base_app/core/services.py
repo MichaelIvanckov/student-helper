@@ -8,7 +8,7 @@ import shutil
 import json
 from pathlib import Path
 from datetime import datetime, date
-from typing import List, Optional, Union, Dict, Any
+from typing import List, Optional, Union, Dict, Tuple, Any
 
 from PySide6.QtCore import QObject, Signal
 from sqlalchemy import create_engine, func, or_
@@ -490,7 +490,14 @@ class DataService(QObject):
         except Exception:
             return None
 
-    def add_photo_by_metadata(self, section_id: int, photo_path: Union[str, Path]) -> Entry:
+    def add_photo_to_entry_by_file(self, photo_path: Union[str, Path], entry_id: int) -> File:
+        """
+        Копирует фото в хранилище и прикрепляет к указанной записи
+        (для API и промежуточной логики, сейчас практически аналог add_n_attach_file_to_entry).
+        """
+        return self.add_n_attach_file_to_entry(photo_path, entry_id, 'photo')
+
+    def _add_photo_by_metadata(self, section_id: int, photo_path: Union[str, Path]) -> Tuple[File, Entry, date]:
         """
         Добавляет фото в запись, соответствующую дате съёмки.
         Если запись с такой датой отсутствует, создаёт новую.
@@ -508,24 +515,17 @@ class DataService(QObject):
 
         # Теперь добавляем файл и привязываем
         try:
-            # Добавляем файл без метаданных
-            file_obj = self.add_file(photo_path)
-            # Обновляем metadata_json
+            # Добавляем файл и прикрепляем к записи пока без метаданных
+            file_obj = self.add_photo_to_entry_by_file(photo_path, entry.id)
+            # Добавляем в метаданные в metadata_json флаг "добавлен автоматически"
             file_obj.metadata_json = json.dumps({"auto_added": True})
             self.update_file(file_obj.id, metadata_json=file_obj.metadata_json)
-            # Прикрепляем к записи
-            self.attach_file_to_entry(entry.id, file_obj.id, link_type='photo')
         except DataServiceError as e:
-            # Если файл уже существует? Удалим запись? Упростим: пробрасываем ошибку
+            # Если файл уже существует? При любой ошибке пробрасываем исключение
             raise DataServiceError(f"Не удалось прикрепить фото: {e}")
+        return file_obj, entry, photo_date
 
-        return entry
-
-    def add_photo_to_entry_by_file(self, photo_path: Union[str, Path], entry_id: int) -> File:
-        """Копирует фото в хранилище и прикрепляет к указанной записи (без EXIF-логики)."""
-        return self.add_n_attach_file_to_entry(photo_path, entry_id, 'photo')
-
-    def add_photos_batch(self, photo_paths: List[Union[str, Path]], section_id: int) -> Dict:
+    def add_photos_batch_to_section(self, photo_paths: List[Union[str, Path]], section_id: int) -> Dict[str, List]:
         """
         Обрабатывает список фото.
         Возвращает словарь:
@@ -541,14 +541,7 @@ class DataService(QObject):
         for path in photo_paths:
             path = Path(path)
             try:
-                photo_date = self.extract_photo_date(path)
-                if photo_date is None:
-                    raise DataServiceError("Не удалось извлечь дату из EXIF")
-                entry = self.ensure_entry_by_date(section_id, photo_date)
-                file_obj = self.add_photo_to_entry_by_file(path, entry.id)
-                # Помечаем как автоматическое добавление
-                file_obj.metadata_json = json.dumps({"auto_added": True})
-                self.update_file(file_obj.id, metadata_json=file_obj.metadata_json)
+                file_obj, entry, photo_date = self._add_photo_by_metadata(section_id, path)
                 result['added'].append((entry.id, file_obj.id, photo_date))
             except Exception as e:
                 result['failed'].append((str(path), str(e)))

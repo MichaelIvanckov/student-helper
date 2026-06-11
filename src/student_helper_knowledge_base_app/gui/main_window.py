@@ -472,7 +472,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
         # Вызов пакетного метода сервиса
         try:
-            result = self.service.add_photos_batch(paths, self.current_section_id)
+            result = self.service.add_photos_batch_to_section(paths, self.current_section_id)
             # Обработка успешных
             for entry_id, file_id, photo_date in result['added']:
                 QMessageBox.information(self, "Успех", f"Фото от {photo_date} добавлено в запись {entry_id}")
