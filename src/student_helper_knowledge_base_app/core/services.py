@@ -226,6 +226,14 @@ class DataService(QObject):
         with self._get_session() as session:
             return session.query(Entry).get(entry_id)
 
+    def get_dates_with_entries(self, section_id: int) -> List[date]:
+        with self._get_session() as session:
+            dates = session.query(Entry.lecture_date).filter(
+                Entry.section_id == section_id,
+                Entry.lecture_date.isnot(None)
+            ).distinct().all()
+            return [d[0] for d in dates if d[0] is not None]
+
     def search_notes(self, keyword: str) -> List[Entry]:
         """Простой поиск по полю note (case-insensitive)."""
         if not keyword.strip():
