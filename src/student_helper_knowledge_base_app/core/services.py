@@ -499,28 +499,12 @@ class DataService(QObject):
         photo_path = Path(photo_path)
         photo_date = self.extract_photo_date(photo_path)
         if not photo_date:
-            raise DataServiceError("У фото нет даты")
+            raise DataServiceError("Не удалось извлечь дату из EXIF")
             #photo_date = date.today()  # или можно выбросить исключение
 
         # Сначала найдём или создадим запись
-        with self._get_session() as session:
-            entry = (session.query(Entry)
-                     .filter(Entry.section_id == section_id,
-                             Entry.lecture_date == photo_date,
-                             Entry.is_global == False)
-                     .first())
-            if not entry:
-                # Создаём новую запись
-                entry = Entry(
-                    section_id=section_id,
-                    lecture_date=photo_date,
-                    title=f"Фото от {photo_date.isoformat()}",
-                    note="Автоматически создано при добавлении фото"
-                )
-                session.add(entry)
-                self._safe_commit(session, "Не удалось создать запись для фото")
-                session.refresh(entry)
-                self.entry_added.emit(entry)
+        entry = self.ensure_entry_by_date(section_id, photo_date,
+                                          note="Автоматически создано при добавлении фото по EXIF")
 
         # Теперь добавляем файл и привязываем
         try:
