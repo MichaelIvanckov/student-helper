@@ -3,7 +3,7 @@
 Точка входа для тестирования MainWindow
 """
 
-import sys  #sus
+import sys
 import os
 from pathlib import Path
 
