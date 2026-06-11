@@ -231,10 +231,9 @@ class DataService(QObject):
         if not keyword.strip():
             return []
         with self._get_session() as session:
-            return (session.query(Entry)
-                    .filter(Entry.note.contains(keyword))
-                    .order_by(Entry.created_at.desc())
-                    .all())
+            return session.query(Entry).filter(
+                func.lower(Entry.note).contains(keyword.lower())
+            ).order_by(Entry.created_at.desc()).all()
 
 
     # ======================================================================
