@@ -235,7 +235,7 @@ class DataService(QObject):
                  original_name: Optional[str] = None) -> File:
         """
         Добавляет файл в хранилище и создаёт запись File (без привязки к записи).
-        Возвращает объект File.
+        Возвращает объект File (в detached состоянии).
         """
         source = Path(source_path)
         if not source.is_file():
@@ -256,7 +256,7 @@ class DataService(QObject):
             session.add(file_obj)
             self._safe_commit(session, "Не удалось добавить файл")
             session.refresh(file_obj)
-            return file_obj
+            return file_obj  # в detached состоянии
 
     def update_file(self, file_id: int, **kwargs) -> Optional[File]:
         with self._get_session() as session:
@@ -272,8 +272,7 @@ class DataService(QObject):
 
     def attach_file_to_entry(self, entry_id: int, file_id: int,
                              link_type: str = 'attachment',
-                             order_in_entry: Optional[int] = None,
-                             order_in_owner: Optional[int] = None) -> FileLink:
+                             order_in_entry: Optional[int] = None) -> FileLink:
         """
         Привязывает существующий файл к записи (прямая привязка, без владельца).
         """
@@ -300,7 +299,7 @@ class DataService(QObject):
                 file_id=file_id,
                 link_type=link_type,
                 order_in_entry=order_in_entry,
-                order_in_owner=order_in_owner
+                order_in_owner=None
             )
             session.add(link)
             self._safe_commit(session, "Не удалось прикрепить файл к записи")
@@ -350,6 +349,13 @@ class DataService(QObject):
             session.refresh(link)
             self.file_attached.emit(entry_id, file_id)
             return link
+
+    def add_n_attach_file_to_entry(self, file_path: Union[str, Path], entry_id: int,
+                                   link_type='attachment') -> File:
+        """Копирует файл в хранилище, создает запись File и прикрепляет к указанной записи"""
+        file_obj = self.add_file(file_path)
+        self.attach_file_to_entry(entry_id, file_obj.id, link_type=link_type)
+        return file_obj
 
     def detach_file(self, entry_id: int, file_id: int) -> bool:
         """
@@ -514,7 +520,7 @@ class DataService(QObject):
         return entry
 
     #---------------другой способ добавить фото по метаданным----------------
-    def ensure_entry_by_date(self, section_id: int, date: date) -> Entry:
+    def ensure_entry_by_date(self, section_id: int, date: date, title=None, note=None) -> Entry:
         """Находит запись в разделе по дате или создаёт новую."""
         with self._get_session() as session:
             entry = session.query(Entry).filter(
@@ -526,20 +532,18 @@ class DataService(QObject):
                 entry = Entry(
                     section_id=section_id,
                     lecture_date=date,
-                    title=f"Лекция от {date.isoformat()}",
-                    note=""
+                    title=title,
+                    note=(note or "Автоматически созданная запись")
                 )
                 session.add(entry)
-                self._safe_commit(session, "Не удалось создать запись для даты")
+                self._safe_commit(session, f"Не удалось создать запись для даты {date}")
                 session.refresh(entry)
                 self.entry_added.emit(entry)
             return entry
 
     def add_photo_to_entry_by_file(self, photo_path: Union[str, Path], entry_id: int) -> File:
         """Копирует фото в хранилище и прикрепляет к указанной записи (без EXIF-логики)."""
-        file_obj = self.add_file(photo_path)
-        self.attach_file_to_entry(entry_id, file_obj.id, link_type='photo')
-        return file_obj
+        return self.add_n_attach_file_to_entry(photo_path, entry_id, 'photo')
 
     def add_photos_batch(self, photo_paths: List[Union[str, Path]], section_id: int) -> Dict:
         """
