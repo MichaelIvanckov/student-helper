@@ -385,21 +385,48 @@ class DataService(QObject):
         self.attach_file_to_entry(entry_id, file_obj.id, link_type=link_type)
         return file_obj
 
-    def detach_file(self, entry_id: int, file_id: int) -> bool:
+    def _delete_file_permanently(self, file_id: int) -> None:
+        """
+        Полностью удаляет файл из хранилища и из БД.
+        Все связанные FileLink удаляются каскадно благодаря ondelete='CASCADE'.
+        """
+        with self._get_session() as session:
+            file_obj = session.query(File).get(file_id)
+            if not file_obj:
+                return
+            # Удаляем физический файл
+            full_path = (self._storage_dir.parent / file_obj.stored_path).resolve()
+            if full_path.exists():
+                full_path.unlink()
+            session.delete(file_obj)
+            self._safe_commit(session, "Не удалось удалить файл")
+            self.file_deleted.emit(file_id)
+
+    def detach_file(self, entry_id: int, file_id: int, auto_delete_orphaned: bool = False) -> Tuple[bool, bool]:
         """
         Отвязывает файл от конкретной записи (удаляет запись FileLink).
-        Физический файл не удаляется (возможно, он привязан к другим записям).
+        Если auto_delete_orphaned=True и после отвязки у файла не осталось ссылок,
+        файл полностью удаляется (физически и из БД).
+        Возвращает: (True, X), если файл был отвязан, (X, True) — если был удален.
         """
         with self._get_session() as session:
             link = session.query(FileLink).filter_by(
                 entry_id=entry_id, file_id=file_id
             ).first()
             if not link:
-                return False
+                return False, False
             session.delete(link)
             self._safe_commit(session, "Не удалось отвязать файл")
             self.file_detached.emit(entry_id, file_id)
-            return True
+
+            if auto_delete_orphaned:
+                # Проверяем, остались ли ссылки на этот файл
+                remaining = session.query(FileLink).filter_by(file_id=file_id).count()
+                if remaining == 0:
+                    # Файл стал сиротой – удаляем
+                    self._delete_file_permanently(file_id)
+                    return True, True
+            return True, False
 
     def get_files_for_entry(self, entry_id: int) -> List[File]:
         """Возвращает все файлы, привязанные к записи (любым способом)."""
