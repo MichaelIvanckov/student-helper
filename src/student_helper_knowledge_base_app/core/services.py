@@ -455,6 +455,7 @@ class DataService(QObject):
             links = (session.query(FileLink)
                      .filter(FileLink.owner_type == owner_type,
                              FileLink.owner_id == owner_id)
+                     .options(joinedload(FileLink.file))
                      .order_by(FileLink.order_in_owner)
                      .all())
             return [link.file for link in links if link.file.deleted_at is None]
