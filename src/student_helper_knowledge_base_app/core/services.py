@@ -385,7 +385,7 @@ class DataService(QObject):
         self.attach_file_to_entry(entry_id, file_obj.id, link_type=link_type)
         return file_obj
 
-    def _delete_file_permanently(self, file_id: int) -> None:
+    def delete_file_permanently(self, file_id: int, physical_delete: bool = True) -> None:
         """
         Полностью удаляет файл из хранилища и из БД.
         Все связанные FileLink удаляются каскадно благодаря ondelete='CASCADE'.
@@ -394,15 +394,18 @@ class DataService(QObject):
             file_obj = session.query(File).get(file_id)
             if not file_obj:
                 return
-            # Удаляем физический файл
-            full_path = (self._storage_dir.parent / file_obj.stored_path).resolve()
-            if full_path.exists():
-                full_path.unlink()
+            # Удаляем физический файл, если подтверждено
+            if physical_delete:
+                full_path = (self._storage_dir.parent / file_obj.stored_path).resolve()
+                if full_path.exists():
+                    full_path.unlink()
             session.delete(file_obj)
             self._safe_commit(session, "Не удалось удалить файл")
             self.file_deleted.emit(file_id)
 
-    def detach_file(self, entry_id: int, file_id: int, auto_delete_orphaned: bool = False) -> Tuple[bool, bool]:
+    def detach_file(self, entry_id: int, file_id: int,
+                    auto_delete_orphaned: bool = False,
+                    physical_delete: bool = True) -> Tuple[bool, bool]:
         """
         Отвязывает файл от конкретной записи (удаляет запись FileLink).
         Если auto_delete_orphaned=True и после отвязки у файла не осталось ссылок,
@@ -424,7 +427,7 @@ class DataService(QObject):
                 remaining = session.query(FileLink).filter_by(file_id=file_id).count()
                 if remaining == 0:
                     # Файл стал сиротой – удаляем
-                    self._delete_file_permanently(file_id)
+                    self.delete_file_permanently(file_id, physical_delete)
                     return True, True
             return True, False
 
