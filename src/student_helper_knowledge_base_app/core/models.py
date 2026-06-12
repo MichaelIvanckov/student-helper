@@ -222,8 +222,8 @@ class EntryTopic(Base):
     created_at = Column(DateTime, default=datetime.now)
 
     # Отношения (опционально, для удобства)
-    entry = relationship('Entry', backref='topic_links')
-    topic = relationship('Topic', backref='entry_links')
+    # entry = relationship('Entry', backref='topic_links')
+    # topic = relationship('Topic', backref='entry_links')
 
 
 # ------------------------------------------------------------
