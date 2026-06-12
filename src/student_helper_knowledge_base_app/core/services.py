@@ -551,7 +551,6 @@ class DataService(QObject):
         photo_date = self.extract_photo_date(photo_path)
         if not photo_date:
             raise DataServiceError("Не удалось извлечь дату из EXIF")
-            #photo_date = date.today()  # или можно выбросить исключение
 
         # Сначала найдём или создадим запись
         entry = self.ensure_entry_by_date(section_id, photo_date,
@@ -591,6 +590,13 @@ class DataService(QObject):
                 result['failed'].append((str(path), str(e)))
         return result
 
+    def add_photo_by_resolving_date(self,  photo_path: Union[str, Path], section_id: int, date: date) -> Tuple[File, Entry]:
+        entry = self.ensure_entry_by_date(section_id, date,
+                                          note="Запись создана автоматически при ручном выставлении даты съемки фото")
+        file = self.add_photo_to_entry_by_file(photo_path, entry.id)
+        file.metadata_json = json.dumps({"added_by_date_resolving": True})
+        self.update_file(file.id, metadata_json=file.metadata_json)
+        return file, entry
 
     # ======================================================================
     # Управление настройками внешних программ (для пункта 3)
