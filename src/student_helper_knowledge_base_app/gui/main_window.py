@@ -6,7 +6,7 @@ from datetime import date, datetime
 from typing import Optional, List, Dict, Any
 
 from PySide6.QtCore import Qt, QDate, QPoint
-from PySide6.QtGui import QAction, QIcon
+from PySide6.QtGui import QAction, QIcon, QTextCharFormat
 from PySide6.QtWidgets import (
     QMainWindow, QTreeWidgetItem, QMessageBox, QInputDialog, QFileDialog,
     QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
