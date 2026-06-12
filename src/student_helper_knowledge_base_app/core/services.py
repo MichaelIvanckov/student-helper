@@ -403,6 +403,16 @@ class DataService(QObject):
             self._safe_commit(session, "Не удалось удалить файл")
             self.file_deleted.emit(file_id)
 
+    def check_file_orphaned(self, file_id: int) -> bool:
+        """Проверяет, остались ли ссылки на файл"""
+        with self._get_session() as session:
+            # Получаем количество ссылок на файл
+            remaining = session.query(FileLink).filter_by(file_id=file_id).count()
+            if remaining == 0:
+                # Ссылок нет - файл стал сиротой
+                return True
+        return False
+
     def detach_file(self, entry_id: int, file_id: int,
                     auto_delete_orphaned: bool = False,
                     physical_delete: bool = True) -> Tuple[bool, bool]:
@@ -422,14 +432,11 @@ class DataService(QObject):
             self._safe_commit(session, "Не удалось отвязать файл")
             self.file_detached.emit(entry_id, file_id)
 
-            if auto_delete_orphaned:
-                # Проверяем, остались ли ссылки на этот файл
-                remaining = session.query(FileLink).filter_by(file_id=file_id).count()
-                if remaining == 0:
-                    # Файл стал сиротой – удаляем
-                    self.delete_file_permanently(file_id, physical_delete)
-                    return True, True
-            return True, False
+        # Если указано, проверяем, остались ли ссылки на этот файл и удаляем, если файл осиротел
+        if auto_delete_orphaned and self.check_file_orphaned(file_id):
+            self.delete_file_permanently(file_id, physical_delete)
+            return True, True
+        return True, False
 
     def get_files_for_entry(self, entry_id: int) -> List[File]:
         """Возвращает все файлы, привязанные к записи (любым способом)."""
