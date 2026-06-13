@@ -304,6 +304,9 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.showMenuButton.clicked.connect(self.menuBar.show)
+        self.action_4 = QAction(MainWindow)
+        self.action_4.setObjectName(u"action_4")
+        self.action_4.toggled.connect(self.menuBar.hide)
 
         self.main_tabs.setCurrentIndex(0)
 
@@ -332,5 +335,6 @@ class Ui_MainWindow(object):
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u041f\u0440\u043e\u0444\u0438\u043b\u044c", None))
         self.menu_2.setTitle(QCoreApplication.translate("MainWindow", u"\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438", None))
         self.menu_3.setTitle(QCoreApplication.translate("MainWindow", u"\u2191", None))
+        self.action_4.setText(QCoreApplication.translate("MainWindow", u"\u2191", None))
     # retranslateUi
 

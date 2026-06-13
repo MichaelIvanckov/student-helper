@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'main_window_uiFCWQVe.ui'
+## Form generated from reading UI file 'main_window_uibXXBrH.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.11.1
 ##
@@ -46,15 +46,15 @@ class Ui_MainWindow(object):
         self.verticalLayout_9.setObjectName(u"verticalLayout_9")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.showMenuButton = QPushButton(self.centralwidget)
-        self.showMenuButton.setObjectName(u"showMenuButton")
-        self.showMenuButton.setMinimumSize(QSize(40, 40))
-        self.showMenuButton.setMaximumSize(QSize(30, 16777215))
+        self.pushButton = QPushButton(self.centralwidget)
+        self.pushButton.setObjectName(u"pushButton")
+        self.pushButton.setMinimumSize(QSize(40, 40))
+        self.pushButton.setMaximumSize(QSize(30, 16777215))
         font = QFont()
         font.setPointSize(17)
-        self.showMenuButton.setFont(font)
+        self.pushButton.setFont(font)
 
-        self.horizontalLayout.addWidget(self.showMenuButton)
+        self.horizontalLayout.addWidget(self.pushButton)
 
         self.search_line_edit = QLineEdit(self.centralwidget)
         self.search_line_edit.setObjectName(u"search_line_edit")
@@ -288,8 +288,6 @@ class Ui_MainWindow(object):
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menuBar)
         self.menu_2.setObjectName(u"menu_2")
-        self.menu_3 = QMenu(self.menuBar)
-        self.menu_3.setObjectName(u"menu_3")
         MainWindow.setMenuBar(self.menuBar)
         self.statusBar = QStatusBar(MainWindow)
         self.statusBar.setObjectName(u"statusBar")
@@ -297,13 +295,11 @@ class Ui_MainWindow(object):
 
         self.menuBar.addAction(self.menu.menuAction())
         self.menuBar.addAction(self.menu_2.menuAction())
-        self.menuBar.addAction(self.menu_3.menuAction())
         self.menu.addAction(self.action_2)
         self.menu.addAction(self.action_3)
         self.menu_2.addAction(self.action)
 
         self.retranslateUi(MainWindow)
-        self.showMenuButton.clicked.connect(self.menuBar.show)
 
         self.main_tabs.setCurrentIndex(0)
 
@@ -315,8 +311,8 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u043c\u043e\u0449\u043d\u0438\u043a \u0441\u0442\u0443\u0434\u0435\u043d\u0442\u0430", None))
         self.action.setText(QCoreApplication.translate("MainWindow", u"\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438", None))
         self.action_2.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0431\u0430\u0437\u0443", None))
-        self.action_3.setText(QCoreApplication.translate("MainWindow", u"\u0412\u044b\u0445\u043e\u0434", None))
-        self.showMenuButton.setText(QCoreApplication.translate("MainWindow", u"\u2630", None))
+        self.action_3.setText(QCoreApplication.translate("MainWindow", u"\u041d\u0430\u0432\u0430\u043b\u0438\u0442\u044c \u0431\u0430\u0437\u044b", None))
+        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u2630", None))
         self.search_line_edit.setInputMask("")
         self.search_line_edit.setText("")
         self.search_line_edit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0438\u0441\u043a \u043f\u043e \u0442\u0435\u043a\u0441\u0442\u0443 \u0437\u0430\u043c\u0435\u0442\u043a\u0438 \u0432 \u0437\u0430\u043f\u0438\u0441\u0438", None))
@@ -331,6 +327,5 @@ class Ui_MainWindow(object):
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"\u041e \u0437\u0430\u043f\u0438\u0441\u0438:", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u041f\u0440\u043e\u0444\u0438\u043b\u044c", None))
         self.menu_2.setTitle(QCoreApplication.translate("MainWindow", u"\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438", None))
-        self.menu_3.setTitle(QCoreApplication.translate("MainWindow", u"\u2191", None))
     # retranslateUi
 
